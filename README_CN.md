@@ -1,5 +1,3 @@
-<div align="center">
-
 # hibro - 通用智能记忆助手
 
 **🌐 Language / 语言**
@@ -875,18 +873,8 @@ A: 可以！hibro 支持3层同步机制
 
 ---
 
-<div align="center">
-
-**🌐 Language / 语言**
-
-[English](./README.md) | [中文](./README_CN.md)
-
----
-
 **[⬆ 返回顶部](#hibro---通用智能记忆助手)**
 
 Made with ❤️ by hibro Team
 
 **版本**: 2.2.0 | **最后更新**: 2026-02-20 | **新增**: 多对话框实时同步
-
-</div>

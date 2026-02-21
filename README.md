@@ -1,8 +1,6 @@
-<div align="center">
-
 # hibro - Universal Intelligent Memory Assistant
 
-**🌐 Language / 语言** 
+**🌐 Language / 语言**
 
 [English](./README.md) | [中文](./README_CN.md)
 
@@ -871,20 +869,8 @@ This project is licensed under the MIT License - see [LICENSE](../LICENSE) file 
 
 ---
 
-<div align="center">
-
-<div align="center">
-
-**🌐 Language / 语言**
-
-[English](./README.md) | [中文](./README_CN.md)
-
----
-
 **[⬆ Back to Top](#hibro---universal-intelligent-memory-assistant)**
 
 Made with ❤️ by hibro Team
 
 **Version**: 2.2.0 | **Last Updated**: 2026-02-20 | **New**: Multi-dialog Real-time Sync
-
-</div>
