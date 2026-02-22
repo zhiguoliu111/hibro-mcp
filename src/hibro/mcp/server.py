@@ -2537,7 +2537,7 @@ Execute memory cleanup using triple eviction strategies:
                         "force": {
                             "type": "boolean",
                             "description": "Force cleanup ignoring protection rules",
-                            "default": false
+                            "default": False
                         }
                     }
                 }
@@ -4003,31 +4003,34 @@ View current memory usage and cleanup system status.
 
     # ==================== Resource Handling ====================
 
-    async def _handle_resource_read(self, uri: str) -> str:
+    async def _handle_resource_read(self, uri) -> str:
         """Handle resource reading"""
         try:
-            if uri == "hibro://system-prompt":
+            # Convert AnyUrl to string if needed
+            uri_str = str(uri)
+
+            if uri_str == "hibro://system-prompt":
                 return self._resource_system_prompt()
-            elif uri == "hibro://quick-context":
+            elif uri_str == "hibro://quick-context":
                 return self._resource_quick_context()
-            elif uri == "hibro://status":
+            elif uri_str == "hibro://status":
                 return self._resource_status()
-            elif uri == "hibro://preferences":
+            elif uri_str == "hibro://preferences":
                 return self._resource_preferences()
-            elif uri == "hibro://projects":
+            elif uri_str == "hibro://projects":
                 return self._resource_projects()
-            elif uri == "hibro://recent":
+            elif uri_str == "hibro://recent":
                 return self._resource_recent()
-            elif uri == "hibro://important":
+            elif uri_str == "hibro://important":
                 return self._resource_important()
-            elif uri.startswith("hibro://preferences/"):
-                category = uri.split("/")[-1]
+            elif uri_str.startswith("hibro://preferences/"):
+                category = uri_str.split("/")[-1]
                 return self._resource_preferences_by_category(category)
-            elif uri.startswith("hibro://project/"):
-                project_name = uri.split("/")[-1]
+            elif uri_str.startswith("hibro://project/"):
+                project_name = uri_str.split("/")[-1]
                 return self._resource_project_context(project_name)
             else:
-                return json.dumps({"error": f"Unknown resource: {uri}"})
+                return json.dumps({"error": f"Unknown resource: {uri_str}"})
 
         except Exception as e:
             return json.dumps({"error": str(e)})
