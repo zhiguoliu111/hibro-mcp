@@ -159,6 +159,6 @@ echo   ~/.claude.json             Claude Code MCP config
 echo   ~/.claude/settings.json    Claude Code settings
 echo.
 echo Uninstall:
-echo   scripts\uninstall_simple.bat
+echo   scripts\uninstall.bat
 echo.
 pause
