@@ -36,6 +36,10 @@ from ..assistant.workflow_automator import WorkflowAutomator, Pattern, WorkflowT
 from ..assistant.reminder_system import ReminderSystem, Reminder, ReminderType, ReminderPriority
 from ..assistant.intelligent_assistant import IntelligentAssistant, AssistantContext, AssistantResponse, AssistantConfig
 from ..core.active_task import ActiveTaskManager
+from ..core.lfu import LFUCalculator
+from ..core.memory_cleaner import MemoryCleaner
+from ..core.threshold_checker import ThresholdChecker
+from ..core.cleanup_scheduler import CleanupScheduler
 from ..security.security_monitoring_manager import SecurityMonitoringManager
 from ..guidance.guidance_manager import GuidanceManager, UserLevel, GuidanceContext
 from ..guidance.tool_recommender import ToolRecommender
@@ -89,6 +93,24 @@ class MemoryEngine:
 
         # Initialize project scanner
         self.project_scanner = ProjectScanner()
+
+        # Initialize LFU calculator for cleanup
+        self.lfu_calculator = LFUCalculator()
+
+        # Initialize memory cleanup system
+        self.cleaner = MemoryCleaner(self, self.lfu_calculator)
+        self.threshold_checker = ThresholdChecker(
+            memory_repo=self.memory_repo,
+            cleaner=self.cleaner,
+            max_memories=config.memory.max_memories
+        )
+        self.cleanup_scheduler = CleanupScheduler(
+            cleaner=self.cleaner,
+            config={
+                'cleanup_time_of_day': getattr(config.forgetting, 'cleanup_time', '03:00'),
+                'cleanup_enabled': getattr(config.forgetting, 'cleanup_enabled', True)
+            }
+        )
 
         # Initialize database watcher (for multi-session sync)
         self._db_watcher = None
@@ -149,8 +171,12 @@ class MemoryEngine:
             # Start database watcher (for multi-session sync)
             self._start_database_watcher()
 
+            # Start memory cleanup scheduler
+            self.cleanup_scheduler.start()
+            self.logger.info("Memory cleanup scheduler started")
+
             self._initialized = True
-            self.logger.info("Memory engine initialization complete (database watcher and event bus enabled)")
+            self.logger.info("Memory engine initialization complete (database watcher, event bus, and cleanup scheduler enabled)")
 
         except Exception as e:
             self.logger.error(f"Memory engine initialization failed: {e}")
@@ -216,9 +242,19 @@ class MemoryEngine:
 
         Returns:
             Memory ID
+
+        Raises:
+            Exception: If storage is blocked due to memory capacity
         """
         if not self._initialized:
             self.initialize()
+
+        # Check memory threshold before storing
+        allow_store, message = self.threshold_checker.check_before_store()
+        if not allow_store:
+            raise Exception(message)
+        if message:
+            self.logger.warning(message)
 
         # Clean content
         cleaned_content = sanitize_content(content)
@@ -2458,6 +2494,11 @@ class MemoryEngine:
     def shutdown(self):
         """Shutdown memory engine (cleanup resources)"""
         try:
+            # Stop cleanup scheduler
+            if hasattr(self, 'cleanup_scheduler') and self.cleanup_scheduler:
+                self.cleanup_scheduler.stop()
+                self.logger.info("Cleanup scheduler stopped")
+
             # Stop event bus
             if self._event_bus:
                 self._event_bus.stop()

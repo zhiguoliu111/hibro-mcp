@@ -26,6 +26,13 @@ class ForgettingConfig:
     time_decay_rate: float = 0.1
     min_importance: float = 0.3
     cleanup_interval_days: int = 7
+    # Scheduled cleanup
+    cleanup_time: str = "03:00"          # Daily cleanup time (HH:MM)
+    cleanup_enabled: bool = True         # Enable scheduled cleanup
+    # Threshold triggers
+    threshold_warning: float = 0.7       # Warning threshold (70%)
+    threshold_cleanup: float = 0.85      # Trigger cleanup threshold (85%)
+    threshold_critical: float = 0.95     # Critical threshold (95%, block storage)
 
 
 @dataclass
@@ -108,7 +115,12 @@ class Config:
             'forgetting': {
                 'time_decay_rate': 0.1,
                 'min_importance': 0.3,
-                'cleanup_interval_days': 7
+                'cleanup_interval_days': 7,
+                'cleanup_time': '03:00',
+                'cleanup_enabled': True,
+                'threshold_warning': 0.7,
+                'threshold_cleanup': 0.85,
+                'threshold_critical': 0.95
             },
             'ide': {
                 'type': 'auto',
@@ -252,7 +264,12 @@ class Config:
             'forgetting': {
                 'time_decay_rate': self.forgetting.time_decay_rate,
                 'min_importance': self.forgetting.min_importance,
-                'cleanup_interval_days': self.forgetting.cleanup_interval_days
+                'cleanup_interval_days': self.forgetting.cleanup_interval_days,
+                'cleanup_time': self.forgetting.cleanup_time,
+                'cleanup_enabled': self.forgetting.cleanup_enabled,
+                'threshold_warning': self.forgetting.threshold_warning,
+                'threshold_cleanup': self.forgetting.threshold_cleanup,
+                'threshold_critical': self.forgetting.threshold_critical
             },
             'ide_integration': {
                 'auto_inject': self.ide_integration.auto_inject,

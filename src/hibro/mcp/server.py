@@ -2506,6 +2506,65 @@ View detailed information of all current event subscribers.
                     "type": "object",
                     "properties": {}
                 }
+            ),
+
+            # ===== Memory Cleanup Tools (New) =====
+            Tool(
+                name="trigger_cleanup",
+                description="""Manually trigger memory cleanup
+
+【CORE FUNCTIONALITY】
+Execute memory cleanup using triple eviction strategies:
+1. LFU eviction - Remove least frequently used memories
+2. Time expiry - Remove old unused memories
+3. Importance eviction - Remove low-importance memories
+
+【USAGE SCENARIOS】
+• Free up memory space manually
+• Before large memory import operations
+• After project completion to clean up
+
+【INPUT】
+• force: Force cleanup ignoring protection rules (default: false)
+
+【RETURNS】
+• Number of deleted memories per strategy
+• Total cleanup duration
+""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "force": {
+                            "type": "boolean",
+                            "description": "Force cleanup ignoring protection rules",
+                            "default": false
+                        }
+                    }
+                }
+            ),
+
+            Tool(
+                name="get_cleanup_status",
+                description="""Get memory cleanup status
+
+【CORE FUNCTIONALITY】
+View current memory usage and cleanup system status.
+
+【USAGE SCENARIOS】
+• Check memory usage before/after cleanup
+• Monitor cleanup scheduler status
+• View last cleanup statistics
+
+【RETURNS】
+• Current memory count and usage ratio
+• Threshold status (normal/warning/cleanup_needed/critical)
+• Scheduler status and next cleanup time
+• Last cleanup statistics
+""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {}
+                }
             )
         ]
 
@@ -2603,6 +2662,9 @@ View detailed information of all current event subscribers.
                 "get_status": self._tool_get_status,
                 "update_memory": self._tool_update_memory,
                 "forget": self._tool_forget,
+                # Memory Cleanup (New)
+                "trigger_cleanup": self._tool_trigger_cleanup,
+                "get_cleanup_status": self._tool_get_cleanup_status,
             }
 
             handler = handlers.get(name)
@@ -4365,6 +4427,76 @@ View detailed information of all current event subscribers.
 
         except Exception as e:
             self.logger.error(f"Complete active task failed: {e}")
+            return {"success": False, "error": str(e)}
+
+    # ==================== Memory Cleanup Tools (New) ====================
+
+    async def _tool_trigger_cleanup(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Manually trigger memory cleanup"""
+        force = args.get("force", False)
+
+        try:
+            # Check if cleanup system is available
+            if not hasattr(self.memory_engine, 'cleaner'):
+                return {
+                    "success": False,
+                    "error": "Memory cleanup system not available"
+                }
+
+            # Execute cleanup
+            result = self.memory_engine.cleaner.execute_cleanup(force=force)
+
+            return {
+                "success": result.get("success", False),
+                "deleted_count": result.get("deleted_count", 0),
+                "strategies": result.get("strategies", {}),
+                "duration_ms": result.get("duration_ms", 0),
+                "forced": result.get("forced", False),
+                "error": result.get("error"),
+                "message": (
+                    f"Cleanup completed: {result.get('deleted_count', 0)} memories deleted"
+                    if result.get("success")
+                    else f"Cleanup failed: {result.get('error', 'Unknown error')}"
+                )
+            }
+
+        except Exception as e:
+            self.logger.error(f"Trigger cleanup failed: {e}")
+            return {"success": False, "error": str(e)}
+
+    async def _tool_get_cleanup_status(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Get memory cleanup status"""
+        try:
+            # Get usage status
+            usage_status = {}
+            if hasattr(self.memory_engine, 'threshold_checker'):
+                usage_status = self.memory_engine.threshold_checker.get_usage_status()
+
+            # Get scheduler status
+            scheduler_status = {}
+            if hasattr(self.memory_engine, 'cleanup_scheduler'):
+                scheduler_status = self.memory_engine.cleanup_scheduler.get_status()
+
+            # Get last cleanup stats
+            last_cleanup = None
+            if hasattr(self.memory_engine, 'cleaner'):
+                last_cleanup = self.memory_engine.cleaner.get_cleanup_stats()
+
+            # Get cleanup preview
+            preview = {}
+            if hasattr(self.memory_engine, 'cleaner'):
+                preview = self.memory_engine.cleaner.get_cleanup_preview()
+
+            return {
+                "success": True,
+                "usage": usage_status,
+                "scheduler": scheduler_status,
+                "last_cleanup": last_cleanup,
+                "preview": preview
+            }
+
+        except Exception as e:
+            self.logger.error(f"Get cleanup status failed: {e}")
             return {"success": False, "error": str(e)}
 
     async def run(self):
