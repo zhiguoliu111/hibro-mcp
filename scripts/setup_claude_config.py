@@ -153,15 +153,13 @@ def main():
     if "hooks" not in settings:
         settings["hooks"] = {}
 
-    # Strong mandatory hook command for SessionStart
-    # The hook outputs the current working directory so Claude can pass it to get_quick_context
-    # Claude must check project_init field to determine if scan_project is needed
+    # Simple hook command for SessionStart
     session_hook = {
         "matcher": "startup|resume",
         "hooks": [
             {
                 "type": "command",
-                "command": "PROJECT_PATH=$(pwd | sed \"s|^/mnt/[a-z]/|/|;s|^/\\\\([a-z]\\\\)/|\\\\1:/|\") && echo \"[MANDATORY] Call mcp__hibro__get_quick_context(project_path=\\\"$PROJECT_PATH\\\") first. If project_init missing, call scan_project(project_path=\\\"$PROJECT_PATH\\\", quick_scan=false)\""
+                "command": "echo '[MANDATORY] must call mcp__hibro__get_quick_context first. If project_init missing, must call mcp__hibro__scan_project(quick_scan=false)'"
             }
         ]
     }
