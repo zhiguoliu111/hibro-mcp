@@ -2525,6 +2525,92 @@ View detailed information of all current event subscribers.
                 }
             ),
 
+            # ===== Code Knowledge Graph Tools (New) =====
+            Tool(
+                name="init_code_knowledge_graph",
+                description="""Initialize code knowledge graph for a project
+
+【CORE FUNCTIONALITY】
+Scan project source code and build a knowledge graph containing:
+- Classes and their methods/inheritance
+- Functions with signatures
+- Import dependencies
+- API endpoints
+- File structure
+
+【USAGE SCENARIOS】
+• First time analyzing a project
+• After major code changes
+• When get_quick_context shows project_init.missing: true
+
+【INPUT】
+• project_path: Project root directory path
+
+【RETURNS】
+• Statistics: files scanned, classes, functions found
+• Knowledge graph initialized status
+
+💡 Tip: This builds a structural code knowledge graph, different from conceptual knowledge graph.
+""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Project root directory path"
+                        }
+                    },
+                    "required": ["project_path"]
+                }
+            ),
+
+            Tool(
+                name="get_code_context",
+                description="""Get code context from knowledge graph
+
+【CORE FUNCTIONALITY】
+Query the code knowledge graph to get project context:
+- Quick overview (files, classes, functions count)
+- Core modules and key classes
+- Recent changes
+- Detailed class/function information
+
+【USAGE SCENARIOS】
+• Understanding project structure
+• Finding key classes and functions
+• Quick project onboarding
+
+【INPUT】
+• project_path: Project path
+• detail_level: 'lightweight' (quick) or 'medium' (detailed)
+• search_query: Optional search term for code entities
+
+【RETURNS】
+• Statistics and key information
+• Token-optimized summary
+""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Project path"
+                        },
+                        "detail_level": {
+                            "type": "string",
+                            "enum": ["lightweight", "medium"],
+                            "description": "Detail level: lightweight (~500 tokens) or medium (~2000 tokens)",
+                            "default": "lightweight"
+                        },
+                        "search_query": {
+                            "type": "string",
+                            "description": "Optional search term to find specific code entities"
+                        }
+                    },
+                    "required": ["project_path"]
+                }
+            ),
+
             # ===== Memory Cleanup Tools (New) =====
             Tool(
                 name="trigger_cleanup",
@@ -2682,6 +2768,9 @@ View current memory usage and cleanup system status.
                 # Memory Cleanup (New)
                 "trigger_cleanup": self._tool_trigger_cleanup,
                 "get_cleanup_status": self._tool_get_cleanup_status,
+                # Code Knowledge Graph (New)
+                "init_code_knowledge_graph": self._tool_init_code_knowledge_graph,
+                "get_code_context": self._tool_get_code_context,
             }
 
             handler = handlers.get(name)
@@ -4517,6 +4606,120 @@ View current memory usage and cleanup system status.
 
         except Exception as e:
             self.logger.error(f"Get cleanup status failed: {e}")
+            return {"success": False, "error": str(e)}
+
+    # ==================== Code Knowledge Graph Tools (New) ====================
+
+    async def _tool_init_code_knowledge_graph(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Initialize code knowledge graph for a project"""
+        project_path = args.get("project_path")
+
+        if not project_path:
+            return {"success": False, "error": "project_path is required"}
+
+        try:
+            from ..knowledge.graph_storage import GraphStorage
+            from ..knowledge.session_update import SessionUpdateManager
+
+            # Initialize storage
+            storage = GraphStorage(self.memory_engine.db_manager)
+
+            # Initialize session update manager
+            manager = SessionUpdateManager(
+                project_path=project_path,
+                storage=storage,
+                max_workers=2
+            )
+
+            # Perform full scan
+            self.logger.info(f"Initializing code knowledge graph for: {project_path}")
+            stats = manager.perform_full_scan()
+
+            # Mark project as knowledge graph initialized
+            from ..storage.models import Memory
+            init_memory = Memory(
+                content=f"Code knowledge graph initialized: {project_path}",
+                memory_type="project",
+                category="code_kg_init",
+                importance=0.9,
+                metadata={
+                    "project_path": project_path,
+                    "initialized_at": datetime.now().isoformat(),
+                    "stats": stats
+                }
+            )
+            self.memory_engine.memory_repo.create_memory(init_memory)
+
+            return {
+                "success": True,
+                "project_path": project_path,
+                "statistics": stats,
+                "message": f"Code knowledge graph initialized: {stats['files_processed']} files, {stats['classes_added']} classes, {stats['functions_added']} functions"
+            }
+
+        except Exception as e:
+            self.logger.error(f"Init code knowledge graph failed: {e}")
+            return {"success": False, "error": str(e)}
+
+    async def _tool_get_code_context(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Get code context from knowledge graph"""
+        project_path = args.get("project_path")
+        detail_level = args.get("detail_level", "lightweight")
+        search_query = args.get("search_query")
+
+        if not project_path:
+            return {"success": False, "error": "project_path is required"}
+
+        try:
+            from ..knowledge.graph_storage import GraphStorage
+            from ..knowledge.code_query import KnowledgeGraphQuery
+
+            # Initialize storage and query
+            storage = GraphStorage(self.memory_engine.db_manager)
+            query = KnowledgeGraphQuery(storage)
+
+            # Check if knowledge graph has data
+            nodes = storage.search_nodes(project_path=project_path, limit=1)
+            if not nodes:
+                return {
+                    "success": False,
+                    "error": "Code knowledge graph not initialized",
+                    "hint": "Call init_code_knowledge_graph first to scan and build the graph"
+                }
+
+            # Perform search if query provided
+            if search_query:
+                result = query.search_code(project_path, search_query)
+                return {
+                    "success": result.success,
+                    "query_time_ms": result.query_time_ms,
+                    "token_estimate": result.token_estimate,
+                    "results": result.data,
+                    "error": result.error
+                }
+
+            # Get context based on detail level
+            if detail_level == "medium":
+                result = query.get_detailed_context(project_path)
+            else:
+                result = query.get_quick_project_context(project_path)
+
+            if result.success:
+                return {
+                    "success": True,
+                    "detail_level": detail_level,
+                    "query_time_ms": result.query_time_ms,
+                    "token_estimate": result.token_estimate,
+                    "data": result.data.__dict__ if hasattr(result.data, '__dict__') else result.data
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": result.error
+                }
+
+        except Exception as e:
+            self.logger.error(f"Get code context failed: {e}")
             return {"success": False, "error": str(e)}
 
     async def run(self):
