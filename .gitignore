@@ -225,4 +225,5 @@ sentence_transformers_cache/
 .claude/
 
 # Planning files (Manus-style file-based planning)
+docs/
 planning-with-files/
