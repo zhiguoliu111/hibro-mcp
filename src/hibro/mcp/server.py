@@ -3934,6 +3934,29 @@ View current memory usage and cleanup system status.
                         "project_path": project_path
                     })
 
+                    # Generate project workflow overview for human understanding
+                    workflow_overview = self._generate_project_workflow(
+                        project_path,
+                        scan_result,
+                        kg_result
+                    )
+
+                    # Store workflow as memory for future reference
+                    from ..storage.models import Memory
+                    workflow_memory = Memory(
+                        content=workflow_overview,
+                        memory_type="project",
+                        category="project_workflow",
+                        importance=0.95,
+                        metadata={
+                            "project_path": project_path,
+                            "project_name": scan_result.get("project_name"),
+                            "generated_at": datetime.now().isoformat()
+                        }
+                    )
+                    self.memory_engine.memory_repo.create_memory(workflow_memory)
+                    self.logger.info(f"Stored project workflow memory for: {project_path}")
+
                     # Re-fetch project_context since scan_project may have updated it
                     context = self.memory_partition.get_context_for_project(project_path)
                     project_context = context.get('project_context', {})
@@ -3944,6 +3967,7 @@ View current memory usage and cleanup system status.
                         "recent_decisions": decisions,
                         "important_facts": important_facts,
                         "project_context": project_context,
+                        "workflow_overview": workflow_overview,
                         "cache_version": self.memory_engine._cache_version,
                         "sync_stats": {
                             "database_watcher": self.memory_engine._db_watcher.get_stats() if self.memory_engine._db_watcher else None,
@@ -3991,13 +4015,27 @@ View current memory usage and cleanup system status.
                         }
                     }
             else:
-                # Already initialized, return result directly
+                # Already initialized, fetch workflow from memory
+                workflow_memories = self.memory_engine.memory_repo.search_memories(
+                    query="",
+                    memory_type="project",
+                    category="project_workflow",
+                    project_path=project_path,
+                    limit=1
+                )
+
+                workflow_overview = None
+                if workflow_memories:
+                    workflow_overview = workflow_memories[0].content
+                    self.logger.info(f"Loaded project workflow from memory")
+
                 result = {
                     "success": True,
                     "preferences": preferences,
                     "recent_decisions": decisions,
                     "important_facts": important_facts,
                     "project_context": project_context,
+                    "workflow_overview": workflow_overview,
                     "cache_version": self.memory_engine._cache_version,
                     "sync_stats": {
                         "database_watcher": self.memory_engine._db_watcher.get_stats() if self.memory_engine._db_watcher else None,
@@ -4009,7 +4047,7 @@ View current memory usage and cleanup system status.
                         "project_hot_count": context['stats']['project_hot_count'],
                         "project_path": project_path
                     },
-                    "project_init": {"initialized": True}
+                    "project_init": {"initialized": True, "from_cache": True}
                 }
 
             return result
@@ -4018,6 +4056,164 @@ View current memory usage and cleanup system status.
             self.logger.error(f"Get quick context failed: {e}")
             # Fallback to original implementation
             return await self._tool_get_quick_context_fallback()
+
+    def _generate_project_workflow(
+        self,
+        project_path: str,
+        scan_result: Dict[str, Any],
+        kg_result: Dict[str, Any]
+    ) -> str:
+        """
+        Generate human-readable project workflow overview
+
+        This creates a comprehensive project understanding document
+        that helps both humans and AI understand the project structure.
+
+        Args:
+            project_path: Project path
+            scan_result: Result from scan_project
+            kg_result: Result from init_code_knowledge_graph
+
+        Returns:
+            Markdown-formatted workflow overview
+        """
+        project_name = scan_result.get("project_name", Path(project_path).name)
+        project_type = scan_result.get("project_type", "unknown")
+        tech_stack = scan_result.get("tech_stack", [])
+        languages = scan_result.get("languages", {})
+        kg_stats = kg_result.get("statistics", {})
+
+        workflow = f"""# {project_name} 项目工作流程
+
+## 项目概览
+
+| 属性 | 值 |
+|------|-----|
+| **项目路径** | `{project_path}` |
+| **项目类型** | {project_type} |
+| **技术栈** | {', '.join(tech_stack) if tech_stack else '待分析'} |
+| **编程语言** | {', '.join(f"{k} ({v}%)" for k, v in languages.items()) if languages else '待分析'} |
+
+## 代码结构
+
+| 类型 | 数量 |
+|------|------|
+| 源代码文件 | {kg_stats.get('files_processed', 0)} |
+| 类定义 | {kg_stats.get('classes_added', 0)} |
+| 函数定义 | {kg_stats.get('functions_added', 0)} |
+| API 端点 | {kg_stats.get('api_endpoints_added', 0)} |
+
+## hibro 工作流程
+
+### 第一次对话（项目初始化）
+
+```
+1. SessionStart Hook 触发
+   │
+   ▼
+2. get_quick_context 检测到新项目
+   │
+   ▼
+3. 自动执行 scan_project
+   ├─ 扫描文件结构
+   ├─ 检测项目类型
+   └─ 分析技术栈
+   │
+   ▼
+4. 自动执行 init_code_knowledge_graph
+   ├─ 解析所有源代码
+   ├─ 提取类和函数
+   └─ 构建知识图谱
+   │
+   ▼
+5. 存储项目记忆
+   ├─ project_init memory
+   ├─ code_kg_init memory
+   └─ project_workflow memory (本文档)
+   │
+   ▼
+6. 返回完整上下文给 Claude
+```
+
+### 第二次及后续对话
+
+```
+1. SessionStart Hook 触发
+   │
+   ▼
+2. get_quick_context 检测到已初始化
+   │
+   ▼
+3. 直接读取项目记忆
+   ├─ project_workflow (本文档)
+   ├─ 用户偏好
+   └─ 最近决策
+   │
+   ▼
+4. 返回上下文 (无需重新扫描)
+```
+
+## 关键文件
+
+*根据知识图谱分析，以下是最重要的文件：*
+
+{self._get_key_files_markdown(project_path)}
+
+## 使用 hibro 工具
+
+### 查询代码结构
+```
+mcp__hibro__get_code_context(
+    project_path="{project_path}",
+    detail_level="medium"
+)
+```
+
+### 搜索代码
+```
+mcp__hibro__get_code_context(
+    project_path="{project_path}",
+    search_query="类名或函数名"
+)
+```
+
+### 重新扫描项目
+```
+mcp__hibro__init_code_knowledge_graph(
+    project_path="{project_path}"
+)
+```
+
+---
+*此文档由 hibro 自动生成于 {datetime.now().strftime("%Y-%m-%d %H:%M")}*
+"""
+        return workflow
+
+    def _get_key_files_markdown(self, project_path: str) -> str:
+        """Get markdown list of key files from knowledge graph"""
+        try:
+            from ..knowledge.graph_storage import GraphStorage, GraphNodeType
+
+            storage = GraphStorage(self.memory_engine.db_manager)
+
+            # Get file nodes sorted by importance
+            file_nodes = storage.search_nodes(
+                project_path=project_path,
+                node_type=GraphNodeType.FILE,
+                limit=5
+            )
+
+            if not file_nodes:
+                return "*等待知识图谱分析*"
+
+            lines = []
+            for node in file_nodes:
+                lines.append(f"- `{node.file_path}` (重要性: {node.importance:.1f})")
+
+            return "\n".join(lines)
+
+        except Exception as e:
+            return f"*获取失败: {e}*"
 
     async def _tool_get_quick_context_fallback(self) -> Dict[str, Any]:
         """Fallback implementation for get quick context"""
