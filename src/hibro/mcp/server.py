@@ -3928,6 +3928,12 @@ View current memory usage and cleanup system status.
                 })
 
                 if scan_result.get("success"):
+                    # Also initialize code knowledge graph
+                    self.logger.info(f"Initializing code knowledge graph for: {project_path}")
+                    kg_result = await self._tool_init_code_knowledge_graph({
+                        "project_path": project_path
+                    })
+
                     # Re-fetch project_context since scan_project may have updated it
                     context = self.memory_partition.get_context_for_project(project_path)
                     project_context = context.get('project_context', {})
@@ -3953,7 +3959,11 @@ View current memory usage and cleanup system status.
                             "initialized": True,
                             "auto_scanned": True,
                             "project_name": scan_result.get("project_name"),
-                            "project_type": scan_result.get("project_type")
+                            "project_type": scan_result.get("project_type"),
+                            "knowledge_graph": {
+                                "initialized": kg_result.get("success", False),
+                                "statistics": kg_result.get("statistics", {})
+                            }
                         }
                     }
                 else:
