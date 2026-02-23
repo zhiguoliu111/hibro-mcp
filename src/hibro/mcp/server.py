@@ -145,6 +145,9 @@ class MCPServer:
         self.memory_engine = MemoryEngine(self.config)
         self.logger = logging.getLogger('hibro.mcp_server')
 
+        # Run database migrations to ensure schema is up-to-date
+        self._run_migrations()
+
         # Intelligent extraction components (lightweight, initialize immediately)
         self.extractor = MemoryExtractor()
 
@@ -169,6 +172,20 @@ class MCPServer:
         self._register_handlers()
 
         self.logger.info("hibro MCP Server initialization completed (intelligent mode, semantic search lazy loading, project context support)")
+
+    def _run_migrations(self):
+        """Run database migrations to ensure schema is up-to-date"""
+        try:
+            from ..storage.migration_manager import MigrationManager
+
+            migration_manager = MigrationManager(self.memory_engine.db_manager)
+            migration_manager.migrate()
+
+            self.logger.info("Database migrations completed successfully")
+
+        except Exception as e:
+            self.logger.warning(f"Failed to run migrations: {e}")
+            # Continue anyway - migrations may have already been run
 
     @property
     def similarity_calc(self):

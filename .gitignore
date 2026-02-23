@@ -227,3 +227,6 @@ sentence_transformers_cache/
 # Planning files (Manus-style file-based planning)
 docs/
 planning-with-files/
+
+# Knowledge graph metadata
+.hibro_kg_metadata.json

@@ -53,7 +53,7 @@ def main():
         "env": {}
     }
 
-    # Complete list of hibro MCP tools (updated)
+    # Complete list of hibro MCP tools (updated with knowledge graph tools)
     hibro_tools = [
         # Core Tools
         "mcp__hibro__get_preferences",
@@ -131,6 +131,12 @@ def main():
         "mcp__hibro__scan_project",
         "mcp__hibro__get_project_progress",
         "mcp__hibro__update_project_status",
+
+        # Knowledge Graph Tools
+        "mcp__hibro__init_knowledge_graph",
+        "mcp__hibro__update_knowledge_graph",
+        "mcp__hibro__query_knowledge_graph",
+        "mcp__hibro__get_project_summary",
 
         # Event & Sync Tools
         "mcp__hibro__get_sync_status",
