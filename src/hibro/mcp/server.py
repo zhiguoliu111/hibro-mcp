@@ -2611,6 +2611,46 @@ Query the code knowledge graph to get project context:
                 }
             ),
 
+            # ===== Memory Refresh Tool (New) =====
+            Tool(
+                name="refresh_memory",
+                description="""Refresh project memory cache
+
+【CORE FUNCTIONALITY】
+Clear all cached memories for a project and rebuild from scratch:
+- Clear project_init, project_workflow, code_context caches
+- Rescan project files
+- Rebuild knowledge graph
+- Regenerate workflow overview
+
+【USAGE SCENARIOS】
+• When memory is stale (shown as ⭐⭐ or lower)
+• After major code changes
+• When answers seem outdated
+• When explicitly asked to "refresh memory"
+
+【INPUT】
+• project_path: Project path to refresh
+
+【RETURNS】
+• Refresh timestamp
+• New memory_status with fresh cache
+• Statistics of rescanned files/classes/functions
+
+💡 Use when memory_status.should_refresh is True
+""",
+                inputSchema={
+                    "type": "object",
+                    "properties": {
+                        "project_path": {
+                            "type": "string",
+                            "description": "Project path to refresh"
+                        }
+                    },
+                    "required": ["project_path"]
+                }
+            ),
+
             # ===== Memory Cleanup Tools (New) =====
             Tool(
                 name="trigger_cleanup",
@@ -2771,6 +2811,8 @@ View current memory usage and cleanup system status.
                 # Code Knowledge Graph (New)
                 "init_code_knowledge_graph": self._tool_init_code_knowledge_graph,
                 "get_code_context": self._tool_get_code_context,
+                # Memory refresh (New)
+                "refresh_memory": self._tool_refresh_memory,
             }
 
             handler = handlers.get(name)
@@ -3862,8 +3904,79 @@ View current memory usage and cleanup system status.
             "count": len(results)
         }
 
+    def _calculate_cache_freshness(self, cached_at_str: str) -> Dict[str, Any]:
+        """
+        Calculate cache freshness based on age
+
+        Args:
+            cached_at_str: ISO format timestamp string
+
+        Returns:
+            Dict with freshness info
+        """
+        try:
+            cached_at = datetime.fromisoformat(cached_at_str)
+            age = datetime.now() - cached_at
+            age_minutes = age.total_seconds() / 60
+
+            if age_minutes < 5:
+                return {
+                    "freshness_stars": "⭐⭐⭐⭐⭐",
+                    "freshness_level": 5,
+                    "age_minutes": int(age_minutes),
+                    "age_human": "just now" if age_minutes < 1 else f"{int(age_minutes)} min ago",
+                    "should_refresh": False,
+                    "suggestion": "No refresh needed"
+                }
+            elif age_minutes < 30:
+                return {
+                    "freshness_stars": "⭐⭐⭐⭐",
+                    "freshness_level": 4,
+                    "age_minutes": int(age_minutes),
+                    "age_human": f"{int(age_minutes)} min ago",
+                    "should_refresh": False,
+                    "suggestion": "No refresh needed"
+                }
+            elif age_minutes < 120:
+                return {
+                    "freshness_stars": "⭐⭐⭐",
+                    "freshness_level": 3,
+                    "age_minutes": int(age_minutes),
+                    "age_human": f"{int(age_minutes)} min ago",
+                    "should_refresh": False,
+                    "suggestion": "Consider refreshing"
+                }
+            elif age_minutes < 1440:  # 24 hours
+                return {
+                    "freshness_stars": "⭐⭐",
+                    "freshness_level": 2,
+                    "age_minutes": int(age_minutes),
+                    "age_human": f"{int(age_minutes / 60)} hours ago",
+                    "should_refresh": True,
+                    "suggestion": "Refresh recommended"
+                }
+            else:
+                days = int(age_minutes / 1440)
+                return {
+                    "freshness_stars": "⭐",
+                    "freshness_level": 1,
+                    "age_minutes": int(age_minutes),
+                    "age_human": f"{days} days ago" if days > 1 else "yesterday",
+                    "should_refresh": True,
+                    "suggestion": "Refresh strongly recommended"
+                }
+        except Exception as e:
+            return {
+                "freshness_stars": "❓",
+                "freshness_level": 0,
+                "age_minutes": -1,
+                "age_human": "unknown",
+                "should_refresh": False,
+                "suggestion": f"Error: {e}"
+            }
+
     async def _tool_get_quick_context(self, args: Dict[str, Any]) -> Dict[str, Any]:
-        """Get quick context - enhanced version, auto initializes new projects with scan_project"""
+        """Get quick context - enhanced version with timestamp and freshness info"""
         # Dynamically get current working directory if project_path not specified
         # This ensures correct project detection when MCP server is started from a different directory
         project_path = args.get("project_path")
@@ -3943,6 +4056,7 @@ View current memory usage and cleanup system status.
 
                     # Store workflow as memory for future reference
                     from ..storage.models import Memory
+                    cached_at = datetime.now()
                     workflow_memory = Memory(
                         content=workflow_overview,
                         memory_type="project",
@@ -3951,7 +4065,7 @@ View current memory usage and cleanup system status.
                         metadata={
                             "project_path": project_path,
                             "project_name": scan_result.get("project_name"),
-                            "generated_at": datetime.now().isoformat()
+                            "generated_at": cached_at.isoformat()
                         }
                     )
                     self.memory_engine.memory_repo.create_memory(workflow_memory)
@@ -3960,6 +4074,9 @@ View current memory usage and cleanup system status.
                     # Re-fetch project_context since scan_project may have updated it
                     context = self.memory_partition.get_context_for_project(project_path)
                     project_context = context.get('project_context', {})
+
+                    # Calculate freshness for new cache
+                    freshness = self._calculate_cache_freshness(cached_at.isoformat())
 
                     result = {
                         "success": True,
@@ -3988,6 +4105,14 @@ View current memory usage and cleanup system status.
                                 "initialized": kg_result.get("success", False),
                                 "statistics": kg_result.get("statistics", {})
                             }
+                        },
+                        "memory_status": {
+                            "cached_at": cached_at.strftime("%Y-%m-%d %H:%M"),
+                            "freshness_stars": freshness["freshness_stars"],
+                            "freshness_level": freshness["freshness_level"],
+                            "age_human": freshness["age_human"],
+                            "should_refresh": freshness["should_refresh"],
+                            "suggestion": freshness["suggestion"]
                         }
                     }
                 else:
@@ -4025,8 +4150,21 @@ View current memory usage and cleanup system status.
                 )
 
                 workflow_overview = None
+                memory_status = {
+                    "cached_at": "unknown",
+                    "freshness_stars": "❓",
+                    "freshness_level": 0,
+                    "age_human": "unknown",
+                    "should_refresh": False,
+                    "suggestion": "No workflow cache found"
+                }
+
                 if workflow_memories:
                     workflow_overview = workflow_memories[0].content
+                    # Get cached timestamp from metadata
+                    cached_at_str = workflow_memories[0].metadata.get("generated_at", "")
+                    if cached_at_str:
+                        memory_status = self._calculate_cache_freshness(cached_at_str)
                     self.logger.info(f"Loaded project workflow from memory")
 
                 result = {
@@ -4047,7 +4185,8 @@ View current memory usage and cleanup system status.
                         "project_hot_count": context['stats']['project_hot_count'],
                         "project_path": project_path
                     },
-                    "project_init": {"initialized": True, "from_cache": True}
+                    "project_init": {"initialized": True, "from_cache": True},
+                    "memory_status": memory_status
                 }
 
             return result
@@ -4870,6 +5009,94 @@ mcp__hibro__init_code_knowledge_graph(
 
         except Exception as e:
             self.logger.error(f"Complete active task failed: {e}")
+            return {"success": False, "error": str(e)}
+
+    # ==================== Memory Refresh Tool (New) ====================
+
+    async def _tool_refresh_memory(self, args: Dict[str, Any]) -> Dict[str, Any]:
+        """Refresh project memory cache - clear and rebuild"""
+        project_path = args.get("project_path")
+
+        if not project_path:
+            return {"success": False, "error": "project_path is required"}
+
+        try:
+            import json
+
+            # 1. Clear all cached memories for this project
+            cleared = {"memories": 0, "nodes": 0}
+
+            with self.memory_engine.db_manager.get_connection() as conn:
+                # Delete project memories
+                cursor = conn.execute('SELECT id, content, metadata, category FROM memories')
+                memories = cursor.fetchall()
+
+                for m in memories:
+                    content = (m[1] or '').lower()
+                    metadata = json.loads(m[2]) if m[2] else {}
+                    meta_project = str(metadata.get('project_path', '')).lower()
+                    category = (m[3] or '').lower()
+
+                    # Delete if project matches or if it's a code context cache
+                    if project_path.lower() in content or project_path.lower() in meta_project:
+                        conn.execute(f'DELETE FROM memories WHERE id = {m[0]}')
+                        cleared["memories"] += 1
+                    elif category.startswith('code_context'):
+                        # Also check metadata for code_context caches
+                        if project_path.lower() in meta_project:
+                            conn.execute(f'DELETE FROM memories WHERE id = {m[0]}')
+                            cleared["memories"] += 1
+
+                conn.commit()
+
+            # 2. Clear knowledge graph nodes
+            from ..knowledge.graph_storage import GraphStorage
+            storage = GraphStorage(self.memory_engine.db_manager)
+            nodes = storage.search_nodes(project_path=project_path, limit=10000)
+            for node in nodes:
+                storage.delete_node(node.node_id)
+            cleared["nodes"] = len(nodes)
+
+            self.logger.info(f"Cleared {cleared} items for refresh")
+
+            # 3. Rebuild - call scan_project
+            scan_result = await self._tool_scan_project({
+                "project_path": project_path,
+                "quick_scan": False
+            })
+
+            # 4. Rebuild knowledge graph
+            kg_result = await self._tool_init_code_knowledge_graph({
+                "project_path": project_path
+            })
+
+            # 5. Get new memory status
+            cached_at = datetime.now()
+            freshness = self._calculate_cache_freshness(cached_at.isoformat())
+
+            return {
+                "success": True,
+                "project_path": project_path,
+                "cleared": cleared,
+                "scan_result": {
+                    "project_name": scan_result.get("project_name"),
+                    "project_type": scan_result.get("project_type")
+                },
+                "kg_statistics": kg_result.get("statistics", {}),
+                "refreshed_at": cached_at.strftime("%Y-%m-%d %H:%M"),
+                "memory_status": {
+                    "cached_at": cached_at.strftime("%Y-%m-%d %H:%M"),
+                    "freshness_stars": freshness["freshness_stars"],
+                    "freshness_level": freshness["freshness_level"],
+                    "age_human": freshness["age_human"],
+                    "should_refresh": False,
+                    "suggestion": "Memory freshly updated!"
+                },
+                "message": f"Memory refreshed at {cached_at.strftime('%H:%M:%S')} - {cleared['memories']} memories cleared, {kg_result.get('statistics', {}).get('classes_added', 0)} classes, {kg_result.get('statistics', {}).get('functions_added', 0)} functions re-indexed"
+            }
+
+        except Exception as e:
+            self.logger.error(f"Refresh memory failed: {e}")
             return {"success": False, "error": str(e)}
 
     # ==================== Memory Cleanup Tools (New) ====================

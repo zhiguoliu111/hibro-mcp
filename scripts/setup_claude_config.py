@@ -142,6 +142,9 @@ def main():
         "mcp__hibro__init_code_knowledge_graph",
         "mcp__hibro__get_code_context",
 
+        # Memory Refresh Tool (New)
+        "mcp__hibro__refresh_memory",
+
         # Event & Sync Tools
         "mcp__hibro__get_sync_status",
         "mcp__hibro__get_event_bus_status",
