@@ -3919,8 +3919,12 @@ View current memory usage and cleanup system status.
             age = datetime.now() - cached_at
             age_minutes = age.total_seconds() / 60
 
+            # Format cached_at for display
+            cached_at_display = cached_at.strftime("%Y-%m-%d %H:%M")
+
             if age_minutes < 5:
                 return {
+                    "cached_at": cached_at_display,
                     "freshness_stars": "⭐⭐⭐⭐⭐",
                     "freshness_level": 5,
                     "age_minutes": int(age_minutes),
@@ -3930,6 +3934,7 @@ View current memory usage and cleanup system status.
                 }
             elif age_minutes < 30:
                 return {
+                    "cached_at": cached_at_display,
                     "freshness_stars": "⭐⭐⭐⭐",
                     "freshness_level": 4,
                     "age_minutes": int(age_minutes),
@@ -3939,6 +3944,7 @@ View current memory usage and cleanup system status.
                 }
             elif age_minutes < 120:
                 return {
+                    "cached_at": cached_at_display,
                     "freshness_stars": "⭐⭐⭐",
                     "freshness_level": 3,
                     "age_minutes": int(age_minutes),
@@ -3948,6 +3954,7 @@ View current memory usage and cleanup system status.
                 }
             elif age_minutes < 1440:  # 24 hours
                 return {
+                    "cached_at": cached_at_display,
                     "freshness_stars": "⭐⭐",
                     "freshness_level": 2,
                     "age_minutes": int(age_minutes),
@@ -3958,6 +3965,7 @@ View current memory usage and cleanup system status.
             else:
                 days = int(age_minutes / 1440)
                 return {
+                    "cached_at": cached_at_display,
                     "freshness_stars": "⭐",
                     "freshness_level": 1,
                     "age_minutes": int(age_minutes),
