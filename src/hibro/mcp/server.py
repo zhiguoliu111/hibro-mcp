@@ -4905,7 +4905,7 @@ mcp__hibro__init_code_knowledge_graph(
                     "hint": "Call init_code_knowledge_graph first to scan and build the graph"
                 }
 
-            # Perform search if query provided
+            # For searches, just query and return (no caching needed for specific searches)
             if search_query:
                 result = query.search_code(project_path, search_query)
                 return {
@@ -4916,19 +4916,65 @@ mcp__hibro__init_code_knowledge_graph(
                     "error": result.error
                 }
 
-            # Get context based on detail level
+            # For general context queries, try to load from memory cache first
+            cache_category = f"code_context_{detail_level}"
+            cached = self.memory_engine.memory_repo.search_memories(
+                query="",
+                memory_type="project",
+                category=cache_category,
+                project_path=project_path,
+                limit=1
+            )
+
+            if cached:
+                # Return cached context
+                import json
+                cached_data = json.loads(cached[0].metadata.get("context_data", "{}"))
+                self.logger.info(f"Loaded code context from cache: {detail_level}")
+                return {
+                    "success": True,
+                    "detail_level": detail_level,
+                    "query_time_ms": 0,
+                    "token_estimate": cached[0].metadata.get("token_estimate", 0),
+                    "data": cached_data,
+                    "from_cache": True
+                }
+
+            # No cache, query from knowledge graph
             if detail_level == "medium":
                 result = query.get_detailed_context(project_path)
             else:
                 result = query.get_quick_project_context(project_path)
 
             if result.success:
+                # Cache the result in memory
+                import json
+                from ..storage.models import Memory
+
+                context_data = result.data.__dict__ if hasattr(result.data, '__dict__') else result.data
+
+                cache_memory = Memory(
+                    content=f"Cached code context ({detail_level}) for {project_path}",
+                    memory_type="project",
+                    category=cache_category,
+                    importance=0.7,
+                    metadata={
+                        "project_path": project_path,
+                        "detail_level": detail_level,
+                        "token_estimate": result.token_estimate,
+                        "context_data": json.dumps(context_data, default=str)
+                    }
+                )
+                self.memory_engine.memory_repo.create_memory(cache_memory)
+                self.logger.info(f"Cached code context: {detail_level}, tokens={result.token_estimate}")
+
                 return {
                     "success": True,
                     "detail_level": detail_level,
                     "query_time_ms": result.query_time_ms,
                     "token_estimate": result.token_estimate,
-                    "data": result.data.__dict__ if hasattr(result.data, '__dict__') else result.data
+                    "data": context_data,
+                    "from_cache": False
                 }
             else:
                 return {
