@@ -4165,6 +4165,16 @@ View current memory usage and cleanup system status.
 4. Return context (no re-scan needed)
 ```
 
+## Project Analysis Flow
+
+*Based on code structure analysis:*
+
+{self._get_analysis_flow_markdown(project_path, kg_stats)}
+
+## Key Classes
+
+{self._get_key_classes_markdown(project_path)}
+
 ## Key Files
 
 *Based on knowledge graph analysis, here are the most important files:*
@@ -4226,6 +4236,112 @@ mcp__hibro__init_code_knowledge_graph(
 
         except Exception as e:
             return f"*Failed to retrieve: {e}*"
+
+    def _get_analysis_flow_markdown(self, project_path: str, kg_stats: Dict) -> str:
+        """
+        Extract project analysis flow from class names
+
+        Analyzes class names to identify workflow steps (e.g., Parser -> Analyzer -> Visualizer)
+        """
+        try:
+            from ..knowledge.graph_storage import GraphStorage, GraphNodeType
+
+            storage = GraphStorage(self.memory_engine.db_manager)
+
+            # Get all class names
+            class_nodes = storage.search_nodes(
+                project_path=project_path,
+                node_type=GraphNodeType.CLASS,
+                limit=50
+            )
+
+            if not class_nodes:
+                return "*No classes found for analysis flow extraction*"
+
+            # Common analysis flow keywords
+            flow_keywords = [
+                ('Parser', 'Data Parsing'),
+                ('Loader', 'Data Loading'),
+                ('Reader', 'Data Reading'),
+                ('Analyzer', 'Analysis'),
+                ('Processor', 'Processing'),
+                ('Detector', 'Detection'),
+                ('Finder', 'Finding'),
+                ('Fitter', 'Fitting'),
+                ('Calculator', 'Calculation'),
+                ('Statistics', 'Statistical Analysis'),
+                ('Visualizer', 'Visualization'),
+                ('Plotter', 'Plotting'),
+                ('Reporter', 'Reporting'),
+                ('Generator', 'Generation'),
+                ('Exporter', 'Export'),
+                ('Writer', 'Writing'),
+                ('Worker', 'Background Processing'),
+                ('Main', 'Main Entry'),
+                ('App', 'Application'),
+                ('GUI', 'User Interface'),
+            ]
+
+            # Map classes to flow steps
+            flow_steps = []
+            seen_names = set()
+
+            for node in class_nodes:
+                name = node.name
+                if name in seen_names:
+                    continue
+                seen_names.add(name)
+
+                # Check for keyword matches
+                for keyword, step_name in flow_keywords:
+                    if keyword in name:
+                        flow_steps.append((name, step_name))
+                        break
+
+            if not flow_steps:
+                # Fallback: just list key classes
+                return "```\n" + "\n".join([f"- {node.name}" for node in class_nodes[:10]]) + "\n```"
+
+            # Build flow diagram
+            lines = ["```"]
+            for i, (class_name, step) in enumerate(flow_steps[:8], 1):
+                lines.append(f"Step {i}: {step}")
+                lines.append(f"   └─ {class_name}")
+            lines.append("```")
+
+            return "\n".join(lines)
+
+        except Exception as e:
+            return f"*Failed to extract analysis flow: {e}*"
+
+    def _get_key_classes_markdown(self, project_path: str) -> str:
+        """Get markdown list of key classes with their methods"""
+        try:
+            from ..knowledge.graph_storage import GraphStorage, GraphNodeType
+
+            storage = GraphStorage(self.memory_engine.db_manager)
+
+            # Get class nodes sorted by importance
+            class_nodes = storage.search_nodes(
+                project_path=project_path,
+                node_type=GraphNodeType.CLASS,
+                limit=10
+            )
+
+            if not class_nodes:
+                return "*No classes found*"
+
+            lines = []
+            for node in class_nodes[:7]:
+                methods = node.metadata.get('methods', [])[:5]  # Show max 5 methods
+                methods_str = ', '.join(methods) if methods else 'no methods'
+                lines.append(f"- **{node.name}** (`{node.file_path}`)")
+                lines.append(f"  - Methods: {methods_str}")
+
+            return "\n".join(lines)
+
+        except Exception as e:
+            return f"*Failed to retrieve classes: {e}*"
 
     async def _tool_get_quick_context_fallback(self) -> Dict[str, Any]:
         """Fallback implementation for get quick context"""
