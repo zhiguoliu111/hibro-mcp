@@ -1106,19 +1106,29 @@ For new projects without existing memory, automatically performs quick scan and 
 - important_facts: High-importance key information
 - project_context: Current project-related context
 - project_init: Present when new project is initialized (contains project_name, project_type, etc.)
-- memory_status: **IMPORTANT - Display this to user!** Shows:
-  - cached_at: When memory was generated (e.g., "2026-02-24 12:29")
-  - freshness_stars: Visual indicator (5 stars = fresh, 1 star = stale)
-  - age_human: Human-readable age (e.g., "5 min ago", "2 hours ago")
-  - should_refresh: Whether user should refresh memory
-  - suggestion: Refresh recommendation
+- memory_status: Shows memory freshness information
 
 [RESPONSE FORMAT - IMPORTANT!]
-When responding, ALWAYS show memory status first:
 
-Memory Status: [X stars] (X min ago) | Cached: YYYY-MM-DD HH:MM
+If project_init.is_first_time is true (first time initialization):
+Display a clear initialization message:
 
-Then provide your actual response. This helps users know if memory is fresh or needs refresh.
+========================================
+[NEW PROJECT INITIALIZED]
+Project: {project_name}
+Type: {project_type}
+Files scanned: {statistics.files_processed}
+Classes found: {statistics.classes_added}
+Functions found: {statistics.functions_added}
+========================================
+
+Then show:
+Memory Status: [X stars] (just now) | Cached: YYYY-MM-DD HH:MM
+
+If NOT first time (from cache):
+Just show: Memory Status: [X stars] (X min ago) | Cached: YYYY-MM-DD HH:MM
+
+This helps users understand what happened and whether memory is fresh.
 
 [IMPORTANT] This tool is the foundation of all personalized functions, recommend calling at the beginning of each session.""",
                 inputSchema={
@@ -4120,12 +4130,14 @@ View current memory usage and cleanup system status.
                         "project_init": {
                             "initialized": True,
                             "auto_scanned": True,
+                            "is_first_time": True,
                             "project_name": scan_result.get("project_name"),
                             "project_type": scan_result.get("project_type"),
                             "knowledge_graph": {
                                 "initialized": kg_result.get("success", False),
                                 "statistics": kg_result.get("statistics", {})
-                            }
+                            },
+                            "init_message": "Project initialized for the first time. Memory cached for future sessions."
                         },
                         "memory_status": {
                             "cached_at": cached_at.strftime("%Y-%m-%d %H:%M"),
