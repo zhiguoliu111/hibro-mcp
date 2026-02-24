@@ -1106,6 +1106,21 @@ For new projects without existing memory, automatically performs quick scan and 
 - important_facts: High-importance key information
 - project_context: Current project-related context
 - project_init: Present when new project is initialized (contains project_name, project_type, etc.)
+- memory_status: **IMPORTANT - Display this to user!** Shows memory freshness:
+  - cached_at: When memory was generated (e.g., "2026-02-24 12:29")
+  - freshness_stars: Visual indicator (⭐⭐⭐⭐⭐ = fresh, ⭐ = stale)
+  - age_human: Human-readable age (e.g., "5 min ago", "2 hours ago")
+  - should_refresh: Whether user should refresh memory
+  - suggestion: Refresh recommendation
+
+[RESPONSE FORMAT - IMPORTANT!]
+When responding, ALWAYS show memory status in this format:
+
+📊 **Memory Status**: ⭐⭐⭐⭐ (5 min ago)
+└─ Cached at: 2026-02-24 12:29
+
+Then provide your actual response. This helps users know if memory is fresh or needs refresh.
+""",
 
 [IMPORTANT] This tool is the foundation of all personalized functions, recommend calling at the beginning of each session.""",
                 inputSchema={
