@@ -349,7 +349,7 @@ class MCPServer:
                 name="analyze_conversation",
                 description="""Analyze a conversation segment and automatically extract memories.
 
-【USE THIS TOOL - Call at the END of conversations or when user shares important info】
+[USE THIS TOOL - Call at the END of conversations or when user shares important info]
 
 This tool will:
 1. Extract user preferences, decisions, and important facts
@@ -357,13 +357,13 @@ This tool will:
 3. Calculate importance scores
 4. Store extracted memories
 
-【WHEN TO CALL:】
+[WHEN TO CALL:]
 - End of a conversation with valuable information
 - User shared preferences or made decisions
 - User explicitly asked to remember something
 - After completing a coding task (to capture patterns)
 
-【INPUT:】
+[INPUT:]
 - conversation: The conversation text to analyze (can be user messages, AI assistant responses, or both)
 - context: Optional context (e.g., project name, task description)""",
                 inputSchema={
@@ -390,12 +390,12 @@ This tool will:
                 name="search_semantic",
                 description="""Semantic search using AI-powered similarity matching.
 
-【BETTER THAN KEYWORD SEARCH FOR:】
+[BETTER THAN KEYWORD SEARCH FOR:]
 - Finding related concepts even with different words
 - Discovering contextually similar memories
 - Getting more relevant results
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - When keyword search returns no results
 - When looking for conceptually related memories
 - When query is vague or general
@@ -432,13 +432,13 @@ Uses sentence-transformers for semantic understanding.""",
                 name="analyze_causal_relations",
                 description="""Analyze causal relationships between memories using advanced reasoning.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - Understanding why certain decisions were made
 - Finding root causes of problems or patterns
 - Discovering decision chains and their effects
 - Analyzing project evolution and technical choices
 
-【CAPABILITIES:】
+[CAPABILITIES:]
 - Identifies 4 types of causal relations: explicit, temporal, semantic, decision
 - Builds causal chains showing cause-effect relationships
 - Performs root cause analysis
@@ -468,13 +468,13 @@ Uses NetworkX for graph-based causal analysis.""",
                 name="predict_next_needs",
                 description="""Predict what the user might need next based on patterns and context.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - Starting a new development phase
 - Planning next steps in a project
 - Anticipating user requirements
 - Proactive assistance and recommendations
 
-【PREDICTION TYPES:】
+[PREDICTION TYPES:]
 - next_need: What functionality/tools user likely needs next
 - tech_choice: Technology recommendations based on patterns
 - project_phase: Current project phase and next steps
@@ -512,13 +512,13 @@ Uses machine learning patterns from decision history.""",
                 name="build_knowledge_graph",
                 description="""Build and analyze knowledge graph from memories and concepts.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - Understanding conceptual relationships in projects
 - Finding related technologies and methodologies
 - Discovering knowledge clusters and patterns
 - Exploring semantic connections between ideas
 
-【CAPABILITIES:】
+[CAPABILITIES:]
 - Extracts concepts from memory content (Chinese + English)
 - Calculates 5 types of relationships: similar, causal, hierarchical, temporal, categorical
 - Identifies central concepts and knowledge clusters
@@ -558,22 +558,22 @@ Uses advanced NLP and graph algorithms.""",
                 name="analyze_project_deeply",
                 description="""Deep Project Analysis - Comprehensive Reasoning Analysis Tool
 
-【Core Functions】
+[Core Functions]
 Conduct comprehensive deep analysis of projects or topics, combining causal analysis, predictive analysis and conceptual analysis to provide comprehensive insights and recommendations.
 
-【Usage Scenarios】
+[Usage Scenarios]
 • Before project decisions - Comprehensive understanding of project status and risks
 • Complex problem diagnosis - Deep analysis of problem root causes and impacts
 • Technical selection - Comprehensive evaluation of different solution pros and cons
 • Project summary - Generate comprehensive analysis reports
 
-【Analysis Dimensions】
+[Analysis Dimensions]
 • Causal analysis: Analyze causes and impact chains of events
 • Predictive analysis: Predict possible development trends and results
 • Conceptual analysis: Identify key concepts and their relationships
 • Comprehensive insights: Deep insights integrating multi-dimensional analysis results
 
-【Differences from Other Tools】
+[Differences from Other Tools]
 • query_reasoning: Quick reasoning for specific problems
 • analyze_project_deeply: Project-level comprehensive deep analysis
 
@@ -617,22 +617,22 @@ Conduct comprehensive deep analysis of projects or topics, combining causal anal
                 name="answer_specific_question",
                 description="""Quick Q&A Reasoning - Intelligent Analysis for Specific Questions
 
-【Core Functions】
+[Core Functions]
 Conduct quick reasoning analysis for users' specific questions, providing targeted answers and recommendations, suitable for solving clear and specific questions.
 
-【Usage Scenarios】
+[Usage Scenarios]
 • Quick Q&A - "Why does this error occur?"
 • Decision consultation - "Which technical solution should I choose?"
 • Relationship analysis - "What's the connection between these two concepts?"
 • Predictive judgment - "What consequences will this have?"
 
-【Reasoning Types】
+[Reasoning Types]
 • causal: Analyze cause and effect relationships
 • predictive: Predict possible developments and consequences
 • conceptual: Analyze relationships between concepts
 • integrated: Comprehensive reasoning to reach conclusions
 
-【Differences from Other Tools】
+[Differences from Other Tools]
 • answer_specific_question: Quick answers to specific questions
 • analyze_project_deeply: Project-level comprehensive deep analysis
 
@@ -675,13 +675,13 @@ Conduct quick reasoning analysis for users' specific questions, providing target
                 name="track_user_behavior",
                 description="""Track user behavior for adaptive learning.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - After user queries or interactions
 - When user provides feedback on recommendations
 - During memory storage or recall operations
 - To build user behavior patterns for personalization
 
-【BEHAVIOR TYPES:】
+[BEHAVIOR TYPES:]
 - query: User searched for information
 - store: User stored new memory
 - recall: User accessed existing memory
@@ -737,13 +737,13 @@ Automatically updates attention weights and learning patterns.""",
                 name="get_personalized_recommendations",
                 description="""Get personalized recommendations based on user behavior and preferences.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - When user starts a new task or project
 - After user queries to suggest related content
 - To proactively suggest relevant memories
 - For discovering knowledge gaps and learning opportunities
 
-【RECOMMENDATION TYPES:】
+[RECOMMENDATION TYPES:]
 - collaborative: Based on similar user patterns
 - content_based: Based on content similarity
 - causal: Based on causal relationships
@@ -790,13 +790,13 @@ Uses advanced machine learning algorithms for personalization.""",
                 name="analyze_user_patterns",
                 description="""Analyze user behavior patterns and learning trends.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To understand user preferences and habits
 - For generating insights about user behavior
 - To detect changes in user interests over time
 - For optimizing recommendation algorithms
 
-【ANALYSIS TYPES:】
+[ANALYSIS TYPES:]
 - query_patterns: Common search patterns and keywords
 - attention_weights: Topics user focuses on most
 - preference_drift: Changes in user preferences over time
@@ -832,13 +832,13 @@ Provides detailed analytics for adaptive learning optimization.""",
                 name="adaptive_importance_scoring",
                 description="""Calculate adaptive importance scores based on user feedback and behavior.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - When storing new memories to get personalized importance
 - To re-evaluate existing memory importance
 - For optimizing memory ranking and retrieval
 - To adapt scoring based on user feedback patterns
 
-【FEATURES:】
+[FEATURES:]
 - Learns from user feedback to improve scoring accuracy
 - Adapts to individual user preferences and patterns
 - Uses reinforcement learning for continuous improvement
@@ -888,13 +888,13 @@ Provides more accurate importance scores than static algorithms.""",
                 name="get_learning_insights",
                 description="""Get insights about learning effectiveness and system performance.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To understand how well the adaptive learning is working
 - For system optimization and tuning
 - To generate reports on learning progress
 - For debugging recommendation quality issues
 
-【INSIGHT TYPES:】
+[INSIGHT TYPES:]
 - recommendation_performance: How accurate recommendations are
 - user_engagement: User interaction patterns and satisfaction
 - learning_progress: How the system is improving over time
@@ -932,22 +932,22 @@ Provides comprehensive analytics for system improvement.""",
                 name="get_preferences",
                 description="""Get user preference settings - Must call before programming
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Get user's programming preferences, tool usage habits and workflow settings to ensure generated code conforms to user habits.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Before writing or modifying code - Ensure following user code style
 • When new session starts - Establish user preference context
 • When user mentions preferences - Get related setting information
 • Before tool recommendations - Provide personalized suggestions based on preferences
 
-【COMMON PREFERENCE TYPES】
+[COMMON PREFERENCE TYPES]
 • code: Code comment language, indentation style, naming conventions
 • tool: Tool selection preferences, IDE configuration
 • workflow: Workflow, development habits
 • project: Project structure, architecture preferences
 
-【PARAMETER DESCRIPTION】
+[PARAMETER DESCRIPTION]
 • No parameters: Get all preference settings
 • Specify category: Get preferences of specific category
 
@@ -972,7 +972,7 @@ Get user's programming preferences, tool usage habits and workflow settings to e
                 name="search_memories",
                 description="""Search memories by keywords.
 
-【USE FOR:】
+[USE FOR:]
 - Quick keyword-based lookups
 - Finding specific technical terms
 - Searching for exact matches
@@ -1003,7 +1003,7 @@ For conceptual/semantic search, use search_semantic instead.""",
                 name="remember",
                 description="""Store a new memory manually.
 
-【AUTO-SAVE TRIGGERS - Consider calling when:】
+[AUTO-SAVE TRIGGERS - Consider calling when:]
 - User explicitly says "remember this"
 - User makes a clear preference statement
 - User makes a technical decision
@@ -1106,21 +1106,19 @@ For new projects without existing memory, automatically performs quick scan and 
 - important_facts: High-importance key information
 - project_context: Current project-related context
 - project_init: Present when new project is initialized (contains project_name, project_type, etc.)
-- memory_status: **IMPORTANT - Display this to user!** Shows memory freshness:
+- memory_status: **IMPORTANT - Display this to user!** Shows:
   - cached_at: When memory was generated (e.g., "2026-02-24 12:29")
-  - freshness_stars: Visual indicator (⭐⭐⭐⭐⭐ = fresh, ⭐ = stale)
+  - freshness_stars: Visual indicator (5 stars = fresh, 1 star = stale)
   - age_human: Human-readable age (e.g., "5 min ago", "2 hours ago")
   - should_refresh: Whether user should refresh memory
   - suggestion: Refresh recommendation
 
 [RESPONSE FORMAT - IMPORTANT!]
-When responding, ALWAYS show memory status in this format:
+When responding, ALWAYS show memory status first:
 
-📊 **Memory Status**: ⭐⭐⭐⭐ (5 min ago)
-└─ Cached at: 2026-02-24 12:29
+Memory Status: [X stars] (X min ago) | Cached: YYYY-MM-DD HH:MM
 
 Then provide your actual response. This helps users know if memory is fresh or needs refresh.
-""",
 
 [IMPORTANT] This tool is the foundation of all personalized functions, recommend calling at the beginning of each session.""",
                 inputSchema={
@@ -1179,12 +1177,12 @@ Then provide your actual response. This helps users know if memory is fresh or n
                 name="set_project_context",
                 description="""Set project-specific context information.
 
-【USE FOR:】
+[USE FOR:]
 - Setting project architecture descriptions
 - Adding project-specific commands
 - Storing project configuration details
 
-【CONTEXT TYPES:】
+[CONTEXT TYPES:]
 - architecture: Project architecture description
 - command: Project-specific commands (build, test, deploy, etc.)
 - task: Task-related information (handled by set_active_task)
@@ -1219,17 +1217,17 @@ This tool creates project-scoped memories that are isolated from global preferen
                 name="set_active_task",
                 description="""Set the active task for a project.
 
-【IMPORTANT:】
+[IMPORTANT:]
 - Only ONE active task per project is allowed
 - Setting a new active task automatically deactivates the previous one
 - Active tasks always appear in project hot data with highest priority
 
-【USE FOR:】
+[USE FOR:]
 - Setting current development focus
 - Tracking what you're working on
 - Ensuring task context is always available
 
-【TASK LIFECYCLE:】
+[TASK LIFECYCLE:]
 1. set_active_task: Create and activate a task
 2. Task appears in get_quick_context project_context
 3. Use complete_active_task or set new task to deactivate""",
@@ -1257,7 +1255,7 @@ This tool creates project-scoped memories that are isolated from global preferen
                 name="complete_active_task",
                 description="""Mark the current active task as completed.
 
-【USE FOR:】
+[USE FOR:]
 - Finishing the current task
 - Clearing active task status
 - Task completion tracking
@@ -1280,22 +1278,22 @@ The task memory remains but is no longer marked as active.""",
                 name="get_smart_suggestions",
                 description="""Get smart suggestions - Proactive suggestions based on project context
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Based on project status, user activities and error situations, proactively provide personalized improvement suggestions and best practice guidance.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Project startup - Get project setup and architecture suggestions
 • After encountering errors - Get problem solving and prevention suggestions
 • Development phase transitions - Get next step action suggestions
 • Technical decisions - Get technology selection and implementation suggestions
 
-【SUGGESTION TYPES】
+[SUGGESTION TYPES]
 • Best practices: Code quality, architecture design, security suggestions
 • Tool recommendations: Tools and libraries suitable for current project
 • Optimization suggestions: Performance, maintainability, development efficiency improvements
 • Problem prevention: Preventive suggestions based on error patterns
 
-【INTELLIGENT FEATURES】
+[INTELLIGENT FEATURES]
 • Context awareness: Based on project type and current status
 • Personalization: Combined with user preferences and historical behavior
 • Priority sorting: Sorted by importance and feasibility
@@ -1347,13 +1345,13 @@ Based on project status, user activities and error situations, proactively provi
                 name="detect_workflow_patterns",
                 description="""Detect repetitive workflow patterns for automation opportunities.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - After completing repetitive tasks
 - When setting up new projects
 - For identifying automation opportunities
 - To optimize development workflows
 
-【PATTERN TYPES:】
+[PATTERN TYPES:]
 - command_sequence: Repeated command patterns
 - project_initialization: Project setup patterns
 - configuration_generation: Config file patterns
@@ -1398,13 +1396,13 @@ Helps identify tasks that can be automated to save time.""",
                 name="get_workflow_recommendations",
                 description="""Get workflow automation recommendations based on detected patterns.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - After detecting workflow patterns
 - When starting new projects
 - For optimizing repetitive tasks
 - To implement automation solutions
 
-【RECOMMENDATION TYPES:】
+[RECOMMENDATION TYPES:]
 - Project initialization templates
 - Command sequence automation
 - Configuration file generation
@@ -1440,13 +1438,13 @@ Provides actionable automation recommendations with templates.""",
                 name="execute_workflow",
                 description="""Execute a workflow automation template.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To automate repetitive tasks
 - When implementing recommended workflows
 - For project initialization
 - To execute predefined automation sequences
 
-【AUTOMATION LEVELS:】
+[AUTOMATION LEVELS:]
 - manual: Show steps for manual execution
 - semi_auto: Execute with user confirmation
 - full_auto: Fully automated execution
@@ -1477,13 +1475,13 @@ Executes workflow templates with variable substitution.""",
                 name="get_intelligent_reminders",
                 description="""Get intelligent reminders based on project context and best practices.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - At project milestones
 - When technical debt accumulates
 - For security and maintenance reminders
 - During development phase transitions
 
-【REMINDER TYPES:】
+[REMINDER TYPES:]
 - milestone: Project milestone reminders
 - tech_debt: Technical debt warnings
 - best_practice: Best practice suggestions
@@ -1544,22 +1542,22 @@ Provides contextual reminders to improve project quality.""",
                 name="get_comprehensive_assistance",
                 description="""Get comprehensive assistance - Project-level integrated suggestions and guidance
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Provide comprehensive intelligent assistance for projects, integrating suggestions, workflows and reminders to solve complex development problems and decision-making needs.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Project startup - Get comprehensive project setup suggestions
 • Encountering complex problems - Need multi-dimensional solutions
 • Technical decisions - Need comprehensive consideration of multiple factors
 • Project optimization - Get comprehensive improvement suggestions
 
-【PROVIDED ASSISTANCE TYPES】
+[PROVIDED ASSISTANCE TYPES]
 • Smart suggestions: Personalized suggestions based on project conditions
 • Workflows: Automation and optimization suggestions
 • Quality reminders: Code quality and best practice reminders
 • Problem diagnosis: Error analysis and solutions
 
-【COORDINATION FUNCTIONS】
+[COORDINATION FUNCTIONS]
 • Suggestion priority sorting and conflict resolution
 • Coordination of multi-module collaborative work
 • Personalized adjustments based on user preferences
@@ -1613,13 +1611,13 @@ Provide comprehensive intelligent assistance for projects, integrating suggestio
                 name="get_assistant_statistics",
                 description="""Get comprehensive statistics about the intelligent assistant performance.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To monitor assistant effectiveness
 - For system optimization
 - To understand usage patterns
 - For performance analysis
 
-【STATISTICS INCLUDE:】
+[STATISTICS INCLUDE:]
 - Suggestion adoption rates
 - Workflow execution success
 - Reminder completion rates
@@ -1638,23 +1636,23 @@ Provides detailed analytics for system improvement.""",
                 name="check_security_status",
                 description="""Check system security status - Comprehensive security health monitoring
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Get complete system security status report, including the operational status of various security modules such as encryption, access control, monitoring and backup.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Security audits - Comprehensive check of system security health
 • Troubleshooting - Diagnose security-related issues
 • Compliance checks - Verify security policy execution
 • Regular monitoring - Understand system security trends
 
-【STATUS INFORMATION INCLUDES】
+[STATUS INFORMATION INCLUDES]
 • Encryption management: Encryption status, key management, encryption statistics
 • Access control: Authentication status, session management, security metrics
 • System monitoring: Health status, performance metrics, anomaly detection
 • Backup system: Backup health, storage status, recovery capability
 • Security events: Recent events, unresolved issues, risk assessment
 
-【OUTPUT FORMAT】
+[OUTPUT FORMAT]
 Provides structured security status report, including health scores and key metrics for each module.
 
 💡 Tip: Recommend calling this tool regularly to monitor system security status and timely discover and handle security risks.""",
@@ -1679,22 +1677,22 @@ Provides structured security status report, including health scores and key metr
                 name="apply_security_policy",
                 description="""Apply security policy - System-level security configuration management
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Apply predefined security policies, uniformly configure security settings of various system modules to ensure security compliance.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Security compliance - Apply security policies that meet standards
 • Environment switching - Adjust security levels according to environment
 • Security hardening - Improve overall system security level
 • Policy updates - Uniformly update security configurations
 
-【AVAILABLE POLICIES】
+[AVAILABLE POLICIES]
 • default: Default security policy, suitable for general use
 • high_security: High security level, suitable for sensitive environments
 • compliance: Compliance policy, meeting enterprise compliance requirements
 • development: Development environment policy, balancing security and convenience
 
-【POLICY CONFIGURATION ITEMS】
+[POLICY CONFIGURATION ITEMS]
 • Encryption requirements: Data encryption level and key management
 • Authentication settings: Multi-factor authentication and session management
 • Backup strategy: Backup frequency and retention period
@@ -1728,13 +1726,13 @@ Apply predefined security policies, uniformly configure security settings of var
                 name="get_security_events",
                 description="""Retrieve security events with optional filtering by type and resolution status.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To monitor security incidents
 - For security event analysis
 - To track unresolved security issues
 - For compliance reporting
 
-【EVENT TYPES:】
+[EVENT TYPES:]
 - backup_failure: Backup operation failures
 - security_breach: Access control violations
 - system_anomaly: Health monitoring alerts
@@ -1760,13 +1758,13 @@ Provides detailed security event tracking and management.""",
                 name="resolve_security_event",
                 description="""Mark a security event as resolved with resolution notes.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - After fixing a security issue
 - To document resolution steps
 - For security event lifecycle management
 - To clear security alerts
 
-【RESOLUTION PROCESS:】
+[RESOLUTION PROCESS:]
 1. Investigate the security event
 2. Take corrective actions
 3. Document the resolution
@@ -1792,21 +1790,21 @@ Maintains security event audit trail and resolution tracking.""",
                 name="create_backup",
                 description="""Create system backup - Multi-strategy data protection
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Create system data backup, support multiple backup strategies, provide enterprise-level data protection and disaster recovery capabilities.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Regular data protection - Establish routine backup plans
 • Before major changes - Safe backup before system upgrades or configuration changes
 • Disaster recovery preparation - Prepare data recovery points for unexpected situations
 • Security incident response - Emergency backup when security incidents occur
 
-【BACKUP STRATEGIES】
+[BACKUP STRATEGIES]
 • full: Complete backup, including all data (suitable for first backup or regular complete backup)
 • incremental: Incremental backup, only backup changes since last backup (saves space and time)
 • differential: Differential backup, backup all changes since last complete backup
 
-【TECHNICAL FEATURES】
+[TECHNICAL FEATURES]
 • Automatic encryption: Backup files automatically encrypted for protection
 • Compression optimization: Smart compression to reduce storage space
 • Integrity verification: Verify data integrity during backup process
@@ -1844,13 +1842,13 @@ Create system data backup, support multiple backup strategies, provide enterpris
                 name="restore_backup",
                 description="""Restore system data from a backup with progress tracking.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - For disaster recovery
 - To restore corrupted data
 - For system rollback scenarios
 - When migrating to new systems
 
-【RESTORE FEATURES:】
+[RESTORE FEATURES:]
 - Automatic decryption
 - Progress monitoring
 - Selective file restoration
@@ -1876,13 +1874,13 @@ Provides secure and reliable data restoration capabilities.""",
                 name="get_backup_statistics",
                 description="""Get comprehensive backup system statistics and health metrics.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To monitor backup system health
 - For capacity planning
 - To check backup compliance
 - For performance optimization
 
-【STATISTICS INCLUDE:】
+[STATISTICS INCLUDE:]
 - Backup counts by type
 - Storage usage and compression ratios
 - Backup health score
@@ -1899,13 +1897,13 @@ Provides detailed backup system analytics and monitoring.""",
                 name="register_sync_device",
                 description="""Register a device for cross-device data synchronization.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To enable multi-device workflows
 - For data migration between systems
 - To set up backup replication
 - For distributed development environments
 
-【DEVICE TYPES:】
+[DEVICE TYPES:]
 - desktop: Desktop computers
 - laptop: Laptop computers
 - mobile: Mobile devices
@@ -1936,13 +1934,13 @@ Enables secure cross-device data synchronization and migration.""",
                 name="start_device_migration",
                 description="""Start data migration between registered devices.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To migrate data to new devices
 - For system upgrades
 - To synchronize development environments
 - For backup replication
 
-【MIGRATION FEATURES:】
+[MIGRATION FEATURES:]
 - Incremental synchronization
 - Progress monitoring
 - Conflict resolution
@@ -1968,13 +1966,13 @@ Provides secure and efficient cross-device data migration.""",
                 name="get_system_health",
                 description="""Get comprehensive system health status and performance metrics.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - To monitor system performance
 - For troubleshooting issues
 - To check resource usage
 - For capacity planning
 
-【HEALTH METRICS:】
+[HEALTH METRICS:]
 - CPU and memory usage
 - Disk space and I/O performance
 - Database health and performance
@@ -1991,13 +1989,13 @@ Provides real-time system monitoring and health assessment.""",
                 name="perform_security_scan",
                 description="""Perform comprehensive security scan with recommendations.
 
-【WHEN TO USE:】
+[WHEN TO USE:]
 - For regular security audits
 - Before system deployments
 - When security issues are suspected
 - For compliance verification
 
-【SCAN INCLUDES:】
+[SCAN INCLUDES:]
 - Encryption status verification
 - Access control security check
 - Backup system health assessment
@@ -2016,16 +2014,16 @@ Provides actionable security recommendations and risk assessment.""",
                 name="create_user_session",
                 description="""Create user session - Intelligent guidance system entry
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Create personalized session for users, enable intelligent guidance, tool recommendations and learning path functions.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • New user first use - Establish personalized usage environment
 • Session start - Enable intelligent guidance functions
 • Project switching - Update project context
 • Restart learning - Reset learning state
 
-【SESSION FUNCTIONS】
+[SESSION FUNCTIONS]
 • Personalized tool recommendations: Based on user level and usage habits
 • Smart usage hints: Provide operation guidance at appropriate times
 • Learning path guidance: Progressive function learning
@@ -2057,22 +2055,22 @@ Create personalized session for users, enable intelligent guidance, tool recomme
                 name="get_tool_recommendations",
                 description="""Get intelligent tool recommendations - Discover related functions
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Based on current context, user behavior and project needs, intelligently recommend the most suitable tools and functions.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Uncertain which tool to use - Get targeted recommendations
 • Explore new functions - Discover unused useful tools
 • Improve efficiency - Find more suitable tool combinations
 • Learning advancement - Understand advanced function tools
 
-【RECOMMENDATION ALGORITHMS】
+[RECOMMENDATION ALGORITHMS]
 • Association recommendations: Recommend related tools based on current tools
 • Pattern recommendations: Recommend common combinations based on usage patterns
 • Context recommendations: Recommend based on project type and stage
 • Learning recommendations: Recommend advanced tools based on user level
 
-【RECOMMENDATION INFORMATION】
+[RECOMMENDATION INFORMATION]
 Each recommendation includes: tool name, recommendation reason, usage tips, prerequisites, estimated value
 
 💡 Tip: Regular checking of recommendations can discover new useful functions and improve work efficiency.""",
@@ -2107,23 +2105,23 @@ Each recommendation includes: tool name, recommendation reason, usage tips, prer
                 name="get_usage_hints",
                 description="""Get usage hints - Intelligent operation guidance
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Provide context-related usage hints at appropriate times to help users better use tools and avoid common errors.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • First time using tools - Get introductory guidance
 • When encountering errors - Get solution suggestions
 • Parameter setting - Get best practice hints
 • Function exploration - Understand advanced usage
 
-【HINT TYPES】
+[HINT TYPES]
 • Usage tips: Best methods for using tools
 • Parameter hints: Setting suggestions for important parameters
 • Workflow suggestions: Tool combination usage suggestions
 • Error prevention: Methods to avoid common errors
 • Feature highlights: Useful functions that are easily overlooked
 
-【INTELLIGENT TRIGGERING】
+[INTELLIGENT TRIGGERING]
 System will automatically trigger related hints based on usage situations, can also actively get hints for specific tools.
 
 💡 Tip: Paying attention to usage hints can quickly master efficient tool usage.""",
@@ -2155,21 +2153,21 @@ System will automatically trigger related hints based on usage situations, can a
                 name="get_learning_paths",
                 description="""Get learning paths - Progressive function learning
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Provide structured learning paths to help users gradually master hibro's various functions from basic to advanced.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • New user onboarding - Systematically learn basic functions
 • Skill improvement - Learn advanced functions and best practices
 • Function exploration - Discover and master unknown functions
 • Knowledge consolidation - Deepen understanding through practice
 
-【LEARNING PATHS】
+[LEARNING PATHS]
 • Beginner path: Basic functions and core concepts (45 minutes)
 • Intermediate path: Advanced analysis and workflow optimization (80 minutes)
 • Advanced expert path: Enterprise functions and system management (90 minutes)
 
-【LEARNING FEATURES】
+[LEARNING FEATURES]
 • Progressive design: Learning sequence from simple to complex
 • Practice-oriented: Each step has specific practice tasks
 • Personalized recommendations: Recommend suitable paths based on user level
@@ -2191,21 +2189,21 @@ Provide structured learning paths to help users gradually master hibro's various
                 name="start_learning_path",
                 description="""Start learning path - Launch structured learning
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Start specified learning path, system will track learning progress and provide corresponding guidance and suggestions.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Start systematic learning - Choose suitable learning path
 • Skill improvement plan - Learn new functions according to plan
 • Team training - Unified learning standards
 • Knowledge system building - Complete mastery of function system
 
-【PATH SELECTION】
+[PATH SELECTION]
 • beginner_path: Beginner entry, learn basic functions
 • intermediate_path: Intermediate advancement, master advanced analysis
 • advanced_path: Expert level, enterprise functions and management
 
-【LEARNING SUPPORT】
+[LEARNING SUPPORT]
 • Step guidance: Detailed instructions for each learning step
 • Practice tasks: Specific operation exercises and verification
 • Progress tracking: Real-time recording of learning progress
@@ -2232,22 +2230,22 @@ Start specified learning path, system will track learning progress and provide c
                 name="complete_learning_step",
                 description="""Complete learning step - Record learning progress
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Mark learning step as completed, update learning progress, and get guidance for next step.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Complete practice tasks - Mark step completion status
 • Update learning progress - Track learning journey
 • Get next step guidance - Understand next learning goal
 • Learning achievement confirmation - Verify learning effectiveness
 
-【COMPLETION VERIFICATION】
+[COMPLETION VERIFICATION]
 System will verify learning step completion to ensure learning quality:
 • Task completion check: Verify if required practice tasks are completed
 • Knowledge point mastery: Confirm if key concepts are understood
 • Skill application: Check if related tools can be used correctly
 
-【PROGRESS UPDATE】
+[PROGRESS UPDATE]
 After completing steps, system will:
 • Update learning progress percentage
 • Unlock next learning step
@@ -2278,22 +2276,22 @@ After completing steps, system will:
                 name="get_guidance_statistics",
                 description="""Get guidance system statistics - Understand usage and effectiveness
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Get usage statistics and effectiveness analysis of intelligent guidance system to help understand learning progress and system usage.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Learning progress view - Understand personal learning status
 • Usage habit analysis - Discover usage patterns and preferences
 • System effectiveness evaluation - Evaluate guidance system help effectiveness
 • Optimization suggestion acquisition - Improvement suggestions based on statistical data
 
-【STATISTICAL INFORMATION】
+[STATISTICAL INFORMATION]
 • Session statistics: Active session count, usage duration, tool usage frequency
 • Recommendation statistics: Recommendation accuracy, adoption rate, most popular tools
 • Learning statistics: Learning path completion status, step pass rate
 • Hint statistics: Hint display count, user feedback, effectiveness evaluation
 
-【ANALYSIS DIMENSIONS】
+[ANALYSIS DIMENSIONS]
 • Personal statistics: Detailed usage data for specified sessions
 • Global statistics: Overall system usage trends and effectiveness
 • Comparative analysis: Usage differences between different user levels
@@ -2316,16 +2314,16 @@ Get usage statistics and effectiveness analysis of intelligent guidance system t
                 name="scan_project",
                 description="""Scan project and generate snapshot
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Automatically scan project directory, identify project structure, tech stack, dependencies, generate project snapshot and store to memory system.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • New project first use - Quickly understand project basic situation
 • Project changes - Update project snapshot to record changes
 • Project switching - Scan to understand new project status
 • Regular recording - Track project evolution process
 
-【SCANNING CONTENT】
+[SCANNING CONTENT]
 • Project type identification: web/api/mobile/desktop/library/data_science
 • Tech stack detection: 20+ mainstream technologies automatically identified
 • Framework identification: React/Vue/FastAPI/Django/Express etc.
@@ -2333,11 +2331,11 @@ Automatically scan project directory, identify project structure, tech stack, de
 • Dependency extraction: Automatically parse package.json/requirements.txt
 • Project statistics: File count, size, directory structure
 
-【SCANNING MODES】
+[SCANNING MODES]
 • Quick scan (default): Only scan key files, complete within 2 seconds
 • Complete scan: Deep scan all files, complete within 10 seconds
 
-【AUTOMATIC STORAGE】
+[AUTOMATIC STORAGE]
 Scan results automatically stored to memory system for convenient subsequent queries and tracking.
 
 💡 Tip: Recommend scanning when starting new projects or when projects undergo major changes.""",
@@ -2360,28 +2358,28 @@ Scan results automatically stored to memory system for convenient subsequent que
                 name="get_project_progress",
                 description="""Get project progress and status
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 View project's current status, active tasks, recent work records and key decisions.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Ask "How is the project going?" - Get complete progress report
 • Switch back to project - Quickly restore project context
 • Regular review - Understand project evolution process
 • Team handover - Show current project status
 
-【INTELLIGENT BEHAVIOR】
+[INTELLIGENT BEHAVIOR]
 • Automatic detection: If project snapshot is expired (>7 days), automatically rescan
 • Context aggregation: Automatically integrate project snapshot, work records, active tasks
 • Historical tracing: Show recent work content and key decisions
 
-【REPORT CONTENT】
+[REPORT CONTENT]
 • Project snapshot: Tech stack, frameworks, languages, project scale
 • Current tasks: Ongoing development tasks
 • Recent work: Work records from last 7 days
 • Key decisions: Important technology selection and architecture decisions
 • Encountered problems: Current unresolved technical issues
 
-【QUICK QUERY】
+[QUICK QUERY]
 Supports natural language queries such as "How is the project going", "What are we working on now", etc.
 
 💡 Tip: Regular checking of project progress helps maintain project direction and track progress.""",
@@ -2399,28 +2397,28 @@ Supports natural language queries such as "How is the project going", "What are 
                 name="update_project_status",
                 description="""Update project status and progress
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Manually update project's current status, tasks and progress percentage.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Start new task - Record current work content
 • Complete task - Mark task completion and update progress
 • Phase change - Record project transition from development to testing phase
 • Progress reporting - Update project completion percentage
 
-【RECORD CONTENT】
+[RECORD CONTENT]
 • Project phase: planning(planning)/development(development)/testing(testing)/production(production)
 • Current task: Description of ongoing development task
 • Progress percentage: 0-100 completion degree
 • Notes information: Additional explanations and considerations
 
-【AUTOMATIC ASSOCIATION】
+[AUTOMATIC ASSOCIATION]
 Updates will automatically associate to project and store to memory system for convenient subsequent queries.
 
-【TIME TRACKING】
+[TIME TRACKING]
 Each update will record timestamp, forming complete project timeline.
 
-【INTELLIGENT SUGGESTIONS】
+[INTELLIGENT SUGGESTIONS]
 Based on project type and current phase, system may provide related suggestions.
 
 💡 Tip: Recommend updating project status when starting or completing important tasks to maintain record timeliness.""",
@@ -2460,15 +2458,15 @@ Based on project type and current phase, system may provide related suggestions.
                 name="get_sync_status",
                 description="""Get database synchronization status
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 View database listener's running status and statistics for multi-IDE dialog synchronization.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Check if listener is running normally
 • View database change count
 • Troubleshoot synchronization issues
 
-【RETURN INFORMATION】
+[RETURN INFORMATION]
 • Listening status (running/stopped)
 • Database path
 • Change detection count
@@ -2488,16 +2486,16 @@ View database listener's running status and statistics for multi-IDE dialog sync
                 name="get_event_bus_status",
                 description="""Get event bus status
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 View event bus running status, statistics and subscriber list.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Monitor event bus health status
 • View event publish/processing statistics
 • Troubleshoot event processing issues
 • View subscriber information
 
-【RETURN INFORMATION】
+[RETURN INFORMATION]
 • Running status (running/stopped)
 • Worker thread count
 • Queue size
@@ -2517,15 +2515,15 @@ View event bus running status, statistics and subscriber list.
                 name="list_event_subscribers",
                 description="""List event subscribers
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 View detailed information of all current event subscribers.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • View which components subscribed to events
 • Check subscriber event types
 • View subscriber call statistics
 
-【RETURN INFORMATION】
+[RETURN INFORMATION]
 • Subscriber ID
 • Subscribed event types
 • Priority
@@ -2545,7 +2543,7 @@ View detailed information of all current event subscribers.
                 name="init_code_knowledge_graph",
                 description="""Initialize code knowledge graph for a project
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Scan project source code and build a knowledge graph containing:
 - Classes and their methods/inheritance
 - Functions with signatures
@@ -2553,15 +2551,15 @@ Scan project source code and build a knowledge graph containing:
 - API endpoints
 - File structure
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • First time analyzing a project
 • After major code changes
 • When get_quick_context shows project_init.missing: true
 
-【INPUT】
+[INPUT]
 • project_path: Project root directory path
 
-【RETURNS】
+[RETURNS]
 • Statistics: files scanned, classes, functions found
 • Knowledge graph initialized status
 
@@ -2583,24 +2581,24 @@ Scan project source code and build a knowledge graph containing:
                 name="get_code_context",
                 description="""Get code context from knowledge graph
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Query the code knowledge graph to get project context:
 - Quick overview (files, classes, functions count)
 - Core modules and key classes
 - Recent changes
 - Detailed class/function information
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Understanding project structure
 • Finding key classes and functions
 • Quick project onboarding
 
-【INPUT】
+[INPUT]
 • project_path: Project path
 • detail_level: 'lightweight' (quick) or 'medium' (detailed)
 • search_query: Optional search term for code entities
 
-【RETURNS】
+[RETURNS]
 • Statistics and key information
 • Token-optimized summary
 """,
@@ -2631,23 +2629,23 @@ Query the code knowledge graph to get project context:
                 name="refresh_memory",
                 description="""Refresh project memory cache
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Clear all cached memories for a project and rebuild from scratch:
 - Clear project_init, project_workflow, code_context caches
 - Rescan project files
 - Rebuild knowledge graph
 - Regenerate workflow overview
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • When memory is stale (shown as ⭐⭐ or lower)
 • After major code changes
 • When answers seem outdated
 • When explicitly asked to "refresh memory"
 
-【INPUT】
+[INPUT]
 • project_path: Project path to refresh
 
-【RETURNS】
+[RETURNS]
 • Refresh timestamp
 • New memory_status with fresh cache
 • Statistics of rescanned files/classes/functions
@@ -2671,21 +2669,21 @@ Clear all cached memories for a project and rebuild from scratch:
                 name="trigger_cleanup",
                 description="""Manually trigger memory cleanup
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 Execute memory cleanup using triple eviction strategies:
 1. LFU eviction - Remove least frequently used memories
 2. Time expiry - Remove old unused memories
 3. Importance eviction - Remove low-importance memories
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Free up memory space manually
 • Before large memory import operations
 • After project completion to clean up
 
-【INPUT】
+[INPUT]
 • force: Force cleanup ignoring protection rules (default: false)
 
-【RETURNS】
+[RETURNS]
 • Number of deleted memories per strategy
 • Total cleanup duration
 """,
@@ -2705,15 +2703,15 @@ Execute memory cleanup using triple eviction strategies:
                 name="get_cleanup_status",
                 description="""Get memory cleanup status
 
-【CORE FUNCTIONALITY】
+[CORE FUNCTIONALITY]
 View current memory usage and cleanup system status.
 
-【USAGE SCENARIOS】
+[USAGE SCENARIOS]
 • Check memory usage before/after cleanup
 • Monitor cleanup scheduler status
 • View last cleanup statistics
 
-【RETURNS】
+[RETURNS]
 • Current memory count and usage ratio
 • Threshold status (normal/warning/cleanup_needed/critical)
 • Scheduler status and next cleanup time
