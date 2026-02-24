@@ -13,6 +13,12 @@ echo "  hibro Intelligent Memory System"
 echo "  Installation Script"
 echo "========================================"
 echo ""
+echo "Features:"
+echo "  - Intelligent memory storage & retrieval"
+echo "  - Code knowledge graph (Python, JS, TS, Vue)"
+echo "  - Semantic search & analysis"
+echo "  - Claude Code MCP integration"
+echo ""
 
 # Check Python version
 echo "[1/7] Checking Python version..."
@@ -26,8 +32,8 @@ else
     exit 1
 fi
 
-$PYTHON --version
-echo "  [OK] Python found"
+PYTHON_VERSION=$($PYTHON --version 2>&1 | awk '{print $2}')
+echo "  [OK] Python $PYTHON_VERSION found"
 
 # Install dependencies
 echo ""
@@ -107,6 +113,13 @@ performance:
 logging:
   level: INFO
   file: ~/.hibro/logs/hibro.log
+
+# Code knowledge graph settings
+code_graph:
+  enabled: true
+  auto_scan_on_project_open: true
+  # Monitored file extensions (can be customized)
+  # Includes: .py, .js, .ts, .jsx, .tsx, .vue, .java, .go, .rs, .cpp, .c, .h, .rb, .php, .swift, .kt
 EOF
     echo "  [OK] Configuration file created"
 else
@@ -178,14 +191,19 @@ echo "  Installation Complete!"
 echo "========================================"
 echo ""
 echo "Usage:"
-echo "  hibro tools:          mcp__hibro__get_quick_context"
+echo "  Get quick context:    mcp__hibro__get_quick_context"
 echo "  Store memory:         mcp__hibro__remember"
 echo "  Search memories:      mcp__hibro__search_memories"
+echo "  Get code context:     mcp__hibro__get_code_context"
+echo "  Scan project:         mcp__hibro__scan_project"
 echo ""
 echo "Configuration files:"
 echo "  ~/.hibro/config.yaml       hibro configuration"
 echo "  ~/.claude.json             Claude Code MCP config"
 echo "  ~/.claude/settings.json    Claude Code settings"
+echo ""
+echo "Supported languages:"
+echo "  Python, JavaScript, TypeScript, Vue, JSX, TSX"
 echo ""
 echo "Uninstall:"
 echo "  scripts/uninstall.sh"

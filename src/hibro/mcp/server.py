@@ -41,6 +41,18 @@ SYSTEM_PROMPT = """# hibro Intelligent Memory System Behavior Guide
 
 You are an assistant for the hibro intelligent memory system. Your responsibility is to help the AI assistant intelligently store and query user memories.
 
+## ⚠️ CRITICAL: First Action Rule
+
+**At the start of EVERY conversation, you MUST call `mcp__hibro__get_quick_context` FIRST before any other action.**
+
+This is not optional. Call it immediately when:
+- Any first message in a new session
+- After a period of inactivity
+
+Example:
+> User: 你好
+> Assistant: [Calls mcp__hibro__get_quick_context] → Then responds with project context
+
 ## Proactive Behavior Rules
 
 ### 1. When to Proactively Store Memories (remember)
@@ -1086,7 +1098,17 @@ For bulk extraction, use analyze_conversation instead.""",
             ),
             Tool(
                 name="get_quick_context",
-                description="""Get user context information - Must call first in each session
+                description="""⚠️ [REQUIRED] Call this FIRST at EVERY conversation start!
+
+This is hibro's main entry point - it MUST be called before any other hibro tools.
+
+[HOW TO USE]
+Simply say: "hibro, get context" or "请调用 hibro get_quick_context"
+
+[DISPLAY REQUIREMENT]
+After calling this tool, you MUST display the Memory Status line to the user:
+- First time: "Memory Status: [⭐⭐⭐⭐⭐] (just now) | Initialized: YYYY-MM-DD HH:MM"
+- From cache: "Memory Status: [⭐⭐⭐⭐] (X min ago) | Cached: YYYY-MM-DD HH:MM"
 
 [CORE FUNCTIONALITY]
 Quickly get user's programming preferences, recent decisions and important information to provide personalized service foundation for intelligent assistant.
@@ -1123,10 +1145,12 @@ Functions found: {statistics.functions_added}
 ========================================
 
 Then show:
-Memory Status: [X stars] (just now) | Cached: YYYY-MM-DD HH:MM
+Memory Status: [X stars] (just now) | Initialized: YYYY-MM-DD HH:MM
 
 If NOT first time (from cache):
-Just show: Memory Status: [X stars] (X min ago) | Cached: YYYY-MM-DD HH:MM
+- If cached_at is available: Memory Status: [X stars] (X min ago) | Cached: YYYY-MM-DD HH:MM
+- If only initialized_at is available (old migration): Memory Status: [❓] | Initialized: YYYY-MM-DD HH:MM
+- If both unknown: Memory Status: [❓] (unknown) | No cache found
 
 This helps users understand what happened and whether memory is fresh.
 
@@ -4006,6 +4030,68 @@ View current memory usage and cleanup system status.
                 "suggestion": f"Error: {e}"
             }
 
+    def _format_init_display_message(
+        self,
+        scan_result: Dict[str, Any],
+        kg_result: Dict[str, Any],
+        kg_stats: Dict[str, Any],
+        freshness: Dict[str, Any],
+        cached_at: datetime
+    ) -> str:
+        """
+        Format initialization display message with complete statistics
+
+        Args:
+            scan_result: Project scan result
+            kg_result: Knowledge graph initialization result
+            kg_stats: Actual knowledge graph statistics
+            freshness: Cache freshness info
+            cached_at: Cache timestamp
+
+        Returns:
+            Formatted display message
+        """
+        lines = [
+            "========================================",
+            "[NEW PROJECT INITIALIZED]",
+            f"Project: {scan_result.get('project_name', 'Unknown')}",
+            f"Type: {scan_result.get('project_type', 'Unknown')}",
+            "",
+            "[Project Statistics]",
+            f"Total files: {scan_result.get('statistics', {}).get('total_files', 0)}",
+            f"Total size: {scan_result.get('statistics', {}).get('total_size_mb', 0)} MB",
+            "",
+            "[Knowledge Graph Statistics]",
+        ]
+
+        # Show scan results or actual node counts
+        if kg_stats.get('files_processed', 0) > 0:
+            lines.append(f"Files processed: {kg_stats['files_processed']}")
+        if kg_stats.get('total_nodes', 0) > 0:
+            lines.append(f"Total nodes: {kg_stats['total_nodes']}")
+        else:
+            lines.append("Total nodes: 0 (scanning in progress)")
+
+        # Add detailed counts if available
+        if kg_stats.get('files_count', 0) > 0:
+            lines.append(f"  - Files: {kg_stats['files_count']}")
+        if kg_stats.get('classes_count', 0) > 0:
+            lines.append(f"  - Classes: {kg_stats['classes_count']}")
+        if kg_stats.get('functions_count', 0) > 0:
+            lines.append(f"  - Functions: {kg_stats['functions_count']}")
+        if kg_stats.get('modules_count', 0) > 0:
+            lines.append(f"  - Modules: {kg_stats['modules_count']}")
+        if kg_stats.get('api_endpoints_count', 0) > 0:
+            lines.append(f"  - API endpoints: {kg_stats['api_endpoints_count']}")
+
+        lines.extend([
+            "========================================",
+            "",
+            f"Memory Status: {freshness['freshness_stars']} ({freshness['age_human']}) | Initialized: {cached_at.strftime('%Y-%m-%d %H:%M')}"
+        ])
+
+        return "\n".join(lines)
+
     async def _tool_get_quick_context(self, args: Dict[str, Any]) -> Dict[str, Any]:
         """Get quick context - enhanced version with timestamp and freshness info"""
         # Dynamically get current working directory if project_path not specified
@@ -4078,6 +4164,34 @@ View current memory usage and cleanup system status.
                         "project_path": project_path
                     })
 
+                    # Get actual knowledge graph statistics from database
+                    kg_stats = {
+                        "files_processed": kg_result.get("statistics", {}).get("files_processed", 0),
+                        "classes_added": kg_result.get("statistics", {}).get("classes_added", 0),
+                        "functions_added": kg_result.get("statistics", {}).get("functions_added", 0),
+                        "api_endpoints_added": kg_result.get("statistics", {}).get("api_endpoints_added", 0)
+                    }
+
+                    # Query actual counts from knowledge graph storage
+                    if kg_result.get("success"):
+                        try:
+                            from ..knowledge.graph_storage import GraphStorage
+                            storage = GraphStorage(self.memory_engine.db_manager)
+
+                            # Count nodes by type for this project
+                            all_nodes = storage.search_nodes(project_path=project_path, limit=100000)
+
+                            kg_stats["total_nodes"] = len(all_nodes)
+                            kg_stats["files_count"] = sum(1 for n in all_nodes if n.node_type.value == "file")
+                            kg_stats["classes_count"] = sum(1 for n in all_nodes if n.node_type.value == "class")
+                            kg_stats["functions_count"] = sum(1 for n in all_nodes if n.node_type.value == "function")
+                            kg_stats["modules_count"] = sum(1 for n in all_nodes if n.node_type.value == "module")
+                            kg_stats["api_endpoints_count"] = sum(1 for n in all_nodes if n.node_type.value == "api_endpoint")
+
+                            self.logger.info(f"Knowledge graph stats: {kg_stats}")
+                        except Exception as e:
+                            self.logger.warning(f"Failed to get detailed KG stats: {e}")
+
                     # Generate project workflow overview for human understanding
                     workflow_overview = self._generate_project_workflow(
                         project_path,
@@ -4135,18 +4249,21 @@ View current memory usage and cleanup system status.
                             "project_type": scan_result.get("project_type"),
                             "knowledge_graph": {
                                 "initialized": kg_result.get("success", False),
-                                "statistics": kg_result.get("statistics", {})
+                                "scan_statistics": kg_result.get("statistics", {}),
+                                "actual_statistics": kg_stats
                             },
                             "init_message": "Project initialized for the first time. Memory cached for future sessions."
                         },
                         "memory_status": {
+                            "initialized_at": cached_at.strftime("%Y-%m-%d %H:%M"),
                             "cached_at": cached_at.strftime("%Y-%m-%d %H:%M"),
                             "freshness_stars": freshness["freshness_stars"],
                             "freshness_level": freshness["freshness_level"],
                             "age_human": freshness["age_human"],
                             "should_refresh": freshness["should_refresh"],
                             "suggestion": freshness["suggestion"]
-                        }
+                        },
+                        "_display_hint": self._format_init_display_message(scan_result, kg_result, kg_stats, freshness, cached_at)
                     }
                 else:
                     result = {
@@ -4182,9 +4299,19 @@ View current memory usage and cleanup system status.
                     limit=1
                 )
 
+                # Also get project_init to retrieve initialized_at
+                init_memories = self.memory_engine.memory_repo.search_memories(
+                    query="",
+                    memory_type="project",
+                    category="project_init",
+                    project_path=project_path,
+                    limit=1
+                )
+
                 workflow_overview = None
                 memory_status = {
                     "cached_at": "unknown",
+                    "initialized_at": "unknown",
                     "freshness_stars": "❓",
                     "freshness_level": 0,
                     "age_human": "unknown",
@@ -4192,12 +4319,25 @@ View current memory usage and cleanup system status.
                     "suggestion": "No workflow cache found - recommend running refresh_memory"
                 }
 
+                # Extract initialized_at from project_init memory
+                initialized_at_display = None
+                if init_memories:
+                    meta = init_memories[0].metadata or {}
+                    initialized_at_str = meta.get("initialized_at", "")
+                    if initialized_at_str:
+                        initialized_dt = datetime.fromisoformat(initialized_at_str)
+                        initialized_at_display = initialized_dt.strftime("%Y-%m-%d %H:%M")
+                        memory_status["initialized_at"] = initialized_at_display
+
                 if workflow_memories:
                     workflow_overview = workflow_memories[0].content
                     # Get cached timestamp from metadata
                     cached_at_str = workflow_memories[0].metadata.get("generated_at", "")
                     if cached_at_str:
-                        memory_status = self._calculate_cache_freshness(cached_at_str)
+                        memory_status.update(self._calculate_cache_freshness(cached_at_str))
+                        # Preserve initialized_at after update
+                        if initialized_at_display:
+                            memory_status["initialized_at"] = initialized_at_display
                     self.logger.info(f"Loaded project workflow from memory")
                 else:
                     # No workflow cache - try to generate from existing knowledge graph
@@ -4300,8 +4440,13 @@ View current memory usage and cleanup system status.
                         "project_hot_count": context['stats']['project_hot_count'],
                         "project_path": project_path
                     },
-                    "project_init": {"initialized": True, "from_cache": True},
-                    "memory_status": memory_status
+                    "project_init": {
+                        "initialized": True,
+                        "from_cache": True,
+                        "display_message": f"Memory Status: {memory_status.get('freshness_stars', '❓')} ({memory_status.get('age_human', 'unknown')}) | Cached: {memory_status.get('cached_at', 'unknown')}"
+                    },
+                    "memory_status": memory_status,
+                    "_display_hint": f"Memory Status: {memory_status.get('freshness_stars', '❓')} ({memory_status.get('age_human', 'unknown')}) | Cached: {memory_status.get('cached_at', 'unknown')}"
                 }
 
             return result
@@ -5307,9 +5452,9 @@ mcp__hibro__init_code_knowledge_graph(
                 max_workers=2
             )
 
-            # Perform full scan
+            # Perform full scan (force rescan for fresh initialization)
             self.logger.info(f"Initializing code knowledge graph for: {project_path}")
-            stats = manager.perform_full_scan()
+            stats = manager.perform_full_scan(force=True)
 
             # Mark project as knowledge graph initialized
             from ..storage.models import Memory

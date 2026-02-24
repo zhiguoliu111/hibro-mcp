@@ -62,6 +62,7 @@ def main():
         except Exception as e:
             print(f"  [ERROR] Failed to clean settings: {e}")
 
+    print("  [OK] Claude Code cleanup completed")
     return 0
 
 

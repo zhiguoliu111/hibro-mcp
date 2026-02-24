@@ -72,7 +72,7 @@ class DatabaseManager:
     def _create_tables(self, conn: sqlite3.Connection):
         """Create database table structure"""
 
-        # Memory main table
+        # Memory main table (with knowledge graph support)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS memories (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,6 +84,9 @@ class DatabaseManager:
                 last_accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 access_count INTEGER DEFAULT 0,
                 metadata TEXT,  -- JSON format metadata
+                graph_node_type TEXT,  -- Knowledge graph: node type (file, class, function, etc.)
+                graph_metadata TEXT,  -- Knowledge graph: node metadata (JSON)
+                file_hash TEXT,  -- Knowledge graph: file hash for change detection
                 CONSTRAINT chk_importance CHECK (importance >= 0.0 AND importance <= 1.0)
             )
         """)

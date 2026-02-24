@@ -395,8 +395,15 @@ class GraphStorage:
                     params.append(node_type.value)
 
                 if project_path is not None:
-                    conditions.append("json_extract(metadata, '$.project_path') = ?")
-                    params.append(project_path)
+                    # Use LIKE to match project_path in JSON regardless of slash direction
+                    # Match both: {"project_path": "D:/projects/black-spider"} and {"project_path": "D:\projects\black-spider"}
+                    # We search for: "project_path": "value" or "project_path": "value" (escaped backslashes)
+                    conditions.append("(metadata LIKE ? OR metadata LIKE ?)")
+                    # Pattern 1: forward slashes in value
+                    params.append(f'%"project_path": "{project_path}"%')
+                    # Pattern 2: backslashes in value (single backslash in JSON = \\ in string)
+                    backslash_path = project_path.replace('/', '\\\\')
+                    params.append(f'%"project_path": "{backslash_path}"%')
 
                 if file_path:
                     conditions.append("json_extract(graph_metadata, '$.file_path') = ?")

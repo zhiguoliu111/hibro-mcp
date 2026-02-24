@@ -17,6 +17,7 @@ from collections import defaultdict
 
 from .python_parser import PythonParser, ParsedFile, FunctionInfo, ClassInfo
 from .js_parser import JSParser, ParsedJSFile, JSFunctionInfo, JSClassInfo, JSAPIEndpoint
+from .vue_parser import VueParser, ParsedVueFile, VueComponentInfo
 
 
 @dataclass
@@ -69,10 +70,12 @@ class CodeAnalyzer:
     # File extensions to analyze
     PYTHON_EXTENSIONS = {'.py'}
     JS_EXTENSIONS = {'.js', '.jsx', '.ts', '.tsx'}
+    VUE_EXTENSIONS = {'.vue'}
 
     def __init__(self):
         self.python_parser = PythonParser()
         self.js_parser = JSParser()
+        self.vue_parser = VueParser()
         self.logger = logging.getLogger('hibro.code_analyzer')
 
     def analyze_project(self, project_path: str, files: Optional[List[str]] = None) -> ProjectAnalysis:
@@ -104,6 +107,8 @@ class CodeAnalyzer:
                 self._analyze_python_file(file_path, result, class_registry, function_registry)
             elif ext in self.JS_EXTENSIONS:
                 self._analyze_js_file(file_path, result, class_registry, function_registry)
+            elif ext in self.VUE_EXTENSIONS:
+                self._analyze_vue_file(file_path, result, class_registry, function_registry)
 
         # Resolve inheritance parent locations
         self._resolve_inheritance(result, class_registry)
@@ -125,7 +130,7 @@ class CodeAnalyzer:
         excluded = {'node_modules', '__pycache__', '.git', '.venv', 'venv',
                    'dist', 'build', '.next', 'coverage', '.pytest_cache'}
 
-        for ext in self.PYTHON_EXTENSIONS | self.JS_EXTENSIONS:
+        for ext in self.PYTHON_EXTENSIONS | self.JS_EXTENSIONS | self.VUE_EXTENSIONS:
             for file in project.rglob(f'*{ext}'):
                 # Skip excluded directories
                 if any(part in excluded for part in file.parts):
@@ -223,6 +228,54 @@ class CodeAnalyzer:
                 file_path=file_path,
                 line_number=endpoint.line_number
             ))
+
+    def _analyze_vue_file(
+        self,
+        file_path: str,
+        result: ProjectAnalysis,
+        class_registry: Dict[str, List[Tuple[str, int]]],
+        function_registry: Dict[str, List[Tuple[str, int]]]
+    ):
+        """Analyze a Vue Single File Component"""
+        parsed = self.vue_parser.parse_file(file_path)
+
+        # Register component
+        if parsed.component:
+            class_registry[parsed.component.name].append((file_path, parsed.component.line_number))
+            result.all_classes[parsed.component.name] = result.all_classes.get(parsed.component.name, [])
+            if file_path not in result.all_classes[parsed.component.name]:
+                result.all_classes[parsed.component.name].append(file_path)
+
+            # Record component hierarchy (extends)
+            for cls in parsed.classes:
+                if cls.extends:
+                    result.inheritance_tree.append(InheritanceRelation(
+                        child=cls.name,
+                        child_file=file_path,
+                        parent=cls.extends
+                    ))
+
+        # Register functions from script
+        for func in parsed.functions:
+            function_registry[func.name].append((file_path, func.line_number))
+            result.all_functions[func.name] = result.all_functions.get(func.name, [])
+            if file_path not in result.all_functions[func.name]:
+                result.all_functions[func.name].append(file_path)
+
+        # Register classes from script (Options API)
+        for cls in parsed.classes:
+            class_registry[cls.name].append((file_path, cls.line_number))
+            result.all_classes[cls.name] = result.all_classes.get(cls.name, [])
+            if file_path not in result.all_classes[cls.name]:
+                result.all_classes[cls.name].append(file_path)
+
+            # Record inheritance
+            if cls.extends:
+                result.inheritance_tree.append(InheritanceRelation(
+                    child=cls.name,
+                    child_file=file_path,
+                    parent=cls.extends
+                ))
 
     def _resolve_inheritance(
         self,

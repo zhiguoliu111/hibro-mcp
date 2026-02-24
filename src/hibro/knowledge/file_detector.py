@@ -35,9 +35,9 @@ class FileChangeDetector:
 
     # File extensions to monitor
     MONITORED_EXTENSIONS = {
-        '.py', '.js', '.ts', '.jsx', '.tsx',
-        '.java', '.go', '.rs', '.cpp', '.c', '.h',
-        '.rb', '.php', '.swift', '.kt'
+        '.py', '.js', '.ts', '.jsx', '.tsx', '.vue',  # Web frontend
+        '.java', '.go', '.rs', '.cpp', '.c', '.h',      # Systems languages
+        '.rb', '.php', '.swift', '.kt'                   # Other languages
     }
 
     # Directories to exclude

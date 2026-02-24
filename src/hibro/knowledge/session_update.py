@@ -166,9 +166,12 @@ class SessionUpdateManager:
 
         return result
 
-    def perform_full_scan(self) -> Dict[str, int]:
+    def perform_full_scan(self, force: bool = False) -> Dict[str, int]:
         """
         Perform full project scan and build knowledge graph
+
+        Args:
+            force: If True, force rescan even if metadata exists
 
         Returns:
             Statistics about scan results
@@ -186,6 +189,12 @@ class SessionUpdateManager:
         }
 
         try:
+            # Check if we need to clear existing metadata for fresh scan
+            if force and self._metadata_path.exists():
+                self.logger.info(f"Force scan: clearing existing metadata at {self._metadata_path}")
+                self._metadata = {}
+                self._save_metadata()
+
             # Initialize file states
             files = self.detector.scan_project_files()
             self.detector.initialize_file_states(files)
@@ -225,6 +234,7 @@ class SessionUpdateManager:
         """
         from ..parsers.python_parser import PythonParser
         from ..parsers.js_parser import JSParser
+        from ..parsers.vue_parser import VueParser
 
         ext = Path(file_path).suffix.lower()
 
@@ -232,6 +242,8 @@ class SessionUpdateManager:
             self._process_python_file(file_path, stats)
         elif ext in {'.js', '.jsx', '.ts', '.tsx'}:
             self._process_js_file(file_path, stats)
+        elif ext == '.vue':
+            self._process_vue_file(file_path, stats)
 
     def _process_python_file(self, file_path: str, stats: Dict[str, int]):
         """Process Python file"""
@@ -357,6 +369,106 @@ class SessionUpdateManager:
             )
             self.storage.create_node(api_node)
             stats['api_endpoints_added'] += 1
+
+    def _process_vue_file(self, file_path: str, stats: Dict[str, int]):
+        """Process Vue Single File Component"""
+        from ..parsers.vue_parser import VueParser
+
+        parser = VueParser()
+        full_path = self.project_path / file_path
+        parsed = parser.parse_file(str(full_path))
+
+        # Create file node
+        file_node = GraphNode(
+            node_type=GraphNodeType.FILE,
+            name=Path(file_path).name,
+            file_path=file_path,
+            importance=0.6,  # Vue files are important (components)
+            project_path=str(self.project_path),
+            metadata={
+                "is_vue": True,
+                "has_template": parsed.template.has_template if parsed.template else False,
+                "has_style": parsed.style.has_style if parsed.style else False,
+                "is_script_setup": parsed.component.is_script_setup if parsed.component else False
+            }
+        )
+        self.storage.create_node(file_node)
+
+        # Create component node
+        if parsed.component:
+            component_node = GraphNode(
+                node_type=GraphNodeType.CLASS,  # Reuse CLASS type for components
+                name=parsed.component.name,
+                file_path=file_path,
+                line_number=parsed.component.line_number,
+                importance=0.9,  # Components are highly important
+                project_path=str(self.project_path),
+                metadata={
+                    "is_component": True,
+                    "is_script_setup": parsed.component.is_script_setup,
+                    "props": parsed.component.props,
+                    "emits": parsed.component.emits,
+                    "composables": parsed.component.composables,
+                    "lifecycle_hooks": parsed.component.lifecycle_hooks,
+                    "template_refs": parsed.component.template_refs
+                }
+            )
+            self.storage.create_node(component_node)
+            stats['classes_added'] += 1
+
+        # Create function nodes from script
+        for func in parsed.functions:
+            func_node = GraphNode(
+                node_type=GraphNodeType.FUNCTION,
+                name=func.name,
+                file_path=file_path,
+                line_number=func.line_number,
+                importance=0.7 if func.is_component else 0.6,
+                project_path=str(self.project_path),
+                metadata={
+                    "is_async": func.is_async,
+                    "is_arrow": func.is_arrow,
+                    "is_component": func.is_component
+                }
+            )
+            self.storage.create_node(func_node)
+            stats['functions_added'] += 1
+
+        # Create class nodes from script (Options API)
+        for cls in parsed.classes:
+            class_node = GraphNode(
+                node_type=GraphNodeType.CLASS,
+                name=cls.name,
+                file_path=file_path,
+                line_number=cls.line_number,
+                importance=0.8 if cls.is_component else 0.7,
+                project_path=str(self.project_path),
+                metadata={
+                    "is_component": cls.is_component,
+                    "methods": cls.methods,
+                    "extends": cls.extends
+                }
+            )
+            self.storage.create_node(class_node)
+            stats['classes_added'] += 1
+
+        # Store template info as metadata
+        if parsed.template:
+            template_node = GraphNode(
+                node_type=GraphNodeType.FILE,
+                name=f"{Path(file_path).stem} (template)",
+                file_path=file_path,
+                line_number=parsed.template.line_number,
+                importance=0.5,
+                project_path=str(self.project_path),
+                metadata={
+                    "is_template": True,
+                    "element_count": parsed.template.element_count,
+                    "custom_components": parsed.template.custom_components,
+                    "bindings": parsed.template.bindings
+                }
+            )
+            self.storage.create_node(template_node)
 
     def perform_incremental_update(self, changes: List[FileChange]) -> Dict[str, int]:
         """
