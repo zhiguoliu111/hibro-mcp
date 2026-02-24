@@ -4188,8 +4188,8 @@ View current memory usage and cleanup system status.
                     "freshness_stars": "❓",
                     "freshness_level": 0,
                     "age_human": "unknown",
-                    "should_refresh": False,
-                    "suggestion": "No workflow cache found"
+                    "should_refresh": True,
+                    "suggestion": "No workflow cache found - recommend running refresh_memory"
                 }
 
                 if workflow_memories:
@@ -4199,6 +4199,88 @@ View current memory usage and cleanup system status.
                     if cached_at_str:
                         memory_status = self._calculate_cache_freshness(cached_at_str)
                     self.logger.info(f"Loaded project workflow from memory")
+                else:
+                    # No workflow cache - try to generate from existing knowledge graph
+                    self.logger.info(f"No workflow cache, checking knowledge graph...")
+
+                    # Check if knowledge graph exists
+                    from ..knowledge.graph_storage import GraphStorage, GraphNodeType
+                    storage = GraphStorage(self.memory_engine.db_manager)
+                    nodes = storage.search_nodes(project_path=project_path, limit=1)
+
+                    if nodes:
+                        # Knowledge graph exists but no workflow - generate it
+                        self.logger.info(f"Generating workflow from existing knowledge graph")
+
+                        # Get scan info from project_init
+                        init_memories = self.memory_engine.memory_repo.search_memories(
+                            query="",
+                            memory_type="project",
+                            category="project_init",
+                            project_path=project_path,
+                            limit=1
+                        )
+
+                        scan_result = {
+                            "project_name": Path(project_path).name,
+                            "project_type": "unknown",
+                            "tech_stack": [],
+                            "languages": {}
+                        }
+
+                        if init_memories:
+                            meta = init_memories[0].metadata or {}
+                            scan_result["project_name"] = meta.get("project_name", Path(project_path).name)
+                            scan_result["project_type"] = meta.get("project_type", "unknown")
+
+                        # Count nodes for statistics
+                        class_count = len(storage.search_nodes(
+                            project_path=project_path,
+                            node_type=GraphNodeType.CLASS,
+                            limit=1000
+                        ))
+                        func_count = len(storage.search_nodes(
+                            project_path=project_path,
+                            node_type=GraphNodeType.FUNCTION,
+                            limit=1000
+                        ))
+
+                        kg_result = {
+                            "success": True,
+                            "statistics": {
+                                "files_processed": 0,
+                                "classes_added": class_count,
+                                "functions_added": func_count,
+                                "api_endpoints_added": 0
+                            }
+                        }
+
+                        workflow_overview = self._generate_project_workflow(
+                            project_path, scan_result, kg_result
+                        )
+
+                        # Store the generated workflow
+                        cached_at = datetime.now()
+                        from ..storage.models import Memory
+                        workflow_memory = Memory(
+                            content=workflow_overview,
+                            memory_type="project",
+                            category="project_workflow",
+                            importance=0.95,
+                            metadata={
+                                "project_path": project_path,
+                                "project_name": scan_result.get("project_name"),
+                                "generated_at": cached_at.isoformat()
+                            }
+                        )
+                        self.memory_engine.memory_repo.create_memory(workflow_memory)
+
+                        memory_status = self._calculate_cache_freshness(cached_at.isoformat())
+                        memory_status["suggestion"] = "Workflow generated from existing knowledge graph"
+                    else:
+                        # No knowledge graph either - need full refresh
+                        memory_status["should_refresh"] = True
+                        memory_status["suggestion"] = "No memory found - recommend running refresh_memory"
 
                 result = {
                     "success": True,
